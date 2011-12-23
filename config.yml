@@ -1,0 +1,21 @@
+# Messages have 4 possible config nodes:
+#     message(String, required): Message to send
+#     delay(int, optional - default 0): Delay to send message on
+#     repeat(int, optional - defalut no repeat): time between repeat sendings of the message
+#     includesperms(String list, optional - default none): permissions nodes to filter who receives message
+#
+# add messages you would like under here
+messages:
+    default1:
+        message: This is an automatically generated repeating message!
+        delay: 15
+        repeat: 60
+    default2:
+        message: This is another automatically generated repeating message for people with build permission!
+        delay: 30
+        repeat: 60
+        includesperms:
+        - permissions.build
+    default3:
+        message: This is an automatically generated one-time message!
+        delay: 45

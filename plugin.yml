@@ -1,0 +1,5 @@
+name: SimpleAnnounce
+main: com.evosysdev.bukkit.taylorjb.simpleannounce.SimpleAnnounce
+version: 0.1.0
+website: http://dev.bukkit.org/server-mods/simpleannounce/
+author: taylorjb
