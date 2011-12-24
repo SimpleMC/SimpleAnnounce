@@ -2,7 +2,9 @@ package com.evosysdev.bukkit.taylorjb.simpleannounce.message;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.logging.StreamHandler;
 
 import org.bukkit.entity.Player;
 
@@ -36,8 +38,8 @@ public class Message implements Runnable
         permissionIncludes = new LinkedList<String>();
         permissionExcludes = new LinkedList<String>();
         
-        logger = Logger.getLogger(SimpleAnnounce.getLogger().getName() + "." + label);
-        System.out.println(logger.getParent().getName());
+        logger = Logger.getLogger(Message.class.getName() + "." + label);
+        logger.setLevel(SimpleAnnounce.getLogger().getLevel());
         logger.finer("Message " + label + " created on delay " + delay);
     }
     

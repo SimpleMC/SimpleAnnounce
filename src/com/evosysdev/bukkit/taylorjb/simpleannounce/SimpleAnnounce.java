@@ -18,7 +18,7 @@ import com.evosysdev.bukkit.taylorjb.simpleannounce.message.RepeatingMessage;
 public class SimpleAnnounce extends JavaPlugin
 {
     // our logger
-    private static Logger logger = Logger.getLogger(Logger.getLogger("Minecraft").getName()+ ".SimpleAnnounce");
+    private static Logger logger = Logger.getLogger(SimpleAnnounce.class.getName());
     
     /**
      * @return SimpleAnnounce logger
@@ -66,6 +66,7 @@ public class SimpleAnnounce extends JavaPlugin
             {
                 public void run()
                 {
+                    reloadConfig();
                     loadConfig();
                 }
             }, reloadTime * 60 * 20L);
@@ -129,9 +130,9 @@ public class SimpleAnnounce extends JavaPlugin
                     "Config nodes:\n" +
                     "\n" +
                     "auto-reloadconfig(int): <Time in minutes to check/reload config for message updates(0 for off)>\n" +
-                    "    NOTE: When config is reloaded, will reset delays for messages\n" +
-                    "debug-mode(boolean): <Should SimpleAnnounce print debug for what players it sends to(true/false)?>\n" +
-                    "    WARNING: lots of messages\n" +
+                    "    NOTE: When config is reloaded, will reset delays for messages and cause one-time messages to resend\n" +
+                    "debug-mode(boolean): <Should we pring debug to server.log(true/false)?>\n" +
+                    "    NOTE: Look for fine and finer level log messages in server.log\n" +
                     "messages: Add messages below this, see below\n" +
                     "\n" +
                     "Messages config overview:\n" +
@@ -250,8 +251,11 @@ public class SimpleAnnounce extends JavaPlugin
                 {
                     if (sender.hasPermission("simpleannounce.reload"))
                     {
-                        loadConfig();
+                        reloadConfig(); // reload file
+                        loadConfig(); // read config
+                        
                         logger.fine("Config reloaded.");
+                        sender.sendMessage("SimpleAnnounce config reloaded");
                     }
                     else
                     {
