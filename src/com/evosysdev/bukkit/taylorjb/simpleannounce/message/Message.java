@@ -26,6 +26,7 @@ public class Message implements Runnable
      */
     public Message(SimpleAnnounce plugin, String message, int delay)
     {
+        this.plugin = plugin;
         this.message = message;
         this.delay = delay;
 
@@ -96,12 +97,7 @@ public class Message implements Runnable
         {
             plugin.getServer().broadcastMessage(message);
         }
-        // excludes are empy and only 1 include, send to those with include
-        else if (permissionExcludes.isEmpty() && permissionIncludes.size() == 1)
-        {
-            plugin.getServer().broadcast(message, permissionIncludes.get(0));
-        }
-        // no built-in api to do this so send a message to all online players
+        // send message to all users that satisfy includes/excludes
         else
         {
             // ensure player satisfies reqs to get messages
@@ -109,6 +105,10 @@ public class Message implements Runnable
             
             for (Player player : plugin.getServer().getOnlinePlayers())
             {
+                // safe-guard
+                if (player == null)
+                    continue;
+                
                 // reset to true until proven false
                 satisfiesIncl = true;
                 satisfiesExcl = true;
@@ -127,7 +127,7 @@ public class Message implements Runnable
                 // go through includes, ensure user has all of the permission nodes
                 for (String exclude : permissionExcludes)
                 {
-                    // does not have includes permission!
+                    // has excludes permission!
                     if (player.hasPermission(exclude))
                     {
                         satisfiesExcl = false;

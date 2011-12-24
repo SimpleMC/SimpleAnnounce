@@ -35,21 +35,66 @@ public class SimpleAnnounce extends JavaPlugin
     {
         Set<String> messageNodes; // message nodes
         ConfigurationSection messageSection; // configuration section of the messages
-        try
+        
+        // if config is invalid or non-existent, throw in default
+        if (!getConfig().contains("messages"))
         {
-            messageSection = getConfig().getConfigurationSection("messages");
-            messageNodes = messageSection.getKeys(false);
-        }
-        catch (NullPointerException npe)
-        { // config file couldn't be read
-            saveDefaultConfig();
-            
-            // now load the messages
-            messageSection = getConfig().getConfigurationSection("messages");
-            messageNodes = messageSection.getKeys(false);
+            generateDefaultConfig();
         }
         
+        messageSection = getConfig().getConfigurationSection("messages");
+        messageNodes = messageSection.getKeys(false);
+        
         addMessages(messageNodes, messageSection);
+    }
+    
+    /**
+     * Generate a config file with default values
+     * 
+     * Unfortunately we cannot use defaults because contains will
+     * return true if node set in default OR config.
+     * (thatssodumb.jpg, rage.mkv, etc etc)
+     */
+    private void generateDefaultConfig()
+    {
+        // set node values
+        getConfig().set("messages.default1.message", "This is an automatically generated repeating message!");
+        getConfig().set("messages.default1.delay", 15);
+        getConfig().set("messages.default1.repeat", 60);
+        getConfig().set("messages.default2.message", "This is another automatically generated repeating message for people with build permission!");
+        getConfig().set("messages.default2.delay", 30);
+        getConfig().set("messages.default2.repeat", 60);
+        List<String> df2Includes = new LinkedList<String>();
+        df2Includes.add("permissions.build");
+        getConfig().set("messages.default2.includesperms", df2Includes);
+        getConfig().set("messages.default3.message", "This is an automatically generated one-time message!");
+        getConfig().set("messages.default3.delay", 45);
+        
+        // set header for information
+        getConfig().options().header(
+                "Messages config overview:\n" +
+                "-------------------------\n" +
+                "\n" +
+                "<message label>:\n" +
+                "    message(String, required): <Message to send>\n" +
+                "    delay(int, optional - default 0): <Delay to send message on in seconds>\n" +
+                "    repeat(int, optional): <time between repeat sendings of the message in seconds>\n" +
+                "    includesperms(String list, optional):\n" +
+                "    - <only send to those with this perm>\n" +
+                "    - <and this one>\n" +
+                "    excludesperms(String list, optional):\n" +
+                "    - <don't send to those with this perm>\n" +
+                "    - <and this one>\n" +
+                "\n" +
+                "-------------------------\n" +
+                "\n" +
+                "add messages you would like under 'messages:' section\n" +
+                "");
+        
+        // save
+        saveConfig();
+        
+        Logger.getLogger("Minecraft").info(getDescription().getName() + " generated new config file.");
     }
     
     /**
@@ -98,7 +143,7 @@ public class SimpleAnnounce extends JavaPlugin
                 current.addPermissionsIncl(currentSec.getList("includesperms"));
             }
             
-            // let's add permission includes for the message now
+            // let's add permission excludes for the message now
             if (currentSec.contains("excludesperms"))
             {
                 current.addPermissionsExcl(currentSec.getList("excludesperms"));
