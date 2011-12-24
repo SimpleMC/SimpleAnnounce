@@ -16,9 +16,9 @@ public class RepeatingMessage extends Message
      * @param period
      *            repeating period
      */
-    public RepeatingMessage(SimpleAnnounce plugin, String message, int delay, int period)
+    public RepeatingMessage(SimpleAnnounce plugin, String label, String message, int delay, int period)
     {
-        super(plugin, message, delay);
+        super(plugin, label, message, delay);
         
         this.period = period;
     }

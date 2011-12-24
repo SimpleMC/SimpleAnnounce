@@ -1,5 +1,19 @@
 name: SimpleAnnounce
 main: com.evosysdev.bukkit.taylorjb.simpleannounce.SimpleAnnounce
-version: 0.2.0
+version: 0.5.0
 website: http://dev.bukkit.org/server-mods/simpleannounce/
 author: taylorjb
+permissions:
+    simpleannounce:
+        description: Gives access to SimpleAnnounce help command
+    simpleannounce.reload:
+        description: Gives access to SimpleAnnounce reload command
+        children:
+            simpleannounce: true
+commands:
+    simpleannounce:
+        description: SimpleAnnounce command for help or config reload
+        usage: |
+            /<command> | Displays SimpleAnnounce help
+            /<command> r | Reloads SimpleAnnounce config
+            /<command> reload | Reloads SimpleAnnounce config

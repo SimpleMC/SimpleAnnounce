@@ -3,8 +3,12 @@ package com.evosysdev.bukkit.taylorjb.simpleannounce;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -13,19 +17,25 @@ import com.evosysdev.bukkit.taylorjb.simpleannounce.message.RepeatingMessage;
 
 public class SimpleAnnounce extends JavaPlugin
 {
-    private List<Message> messages; // the messages we are sending
+    // our logger
+    private static Logger logger = Logger.getLogger(Logger.getLogger("Minecraft").getName()+ ".SimpleAnnounce");
+    
+    /**
+     * @return SimpleAnnounce logger
+     */
+    public static Logger getLogger()
+    {
+        return logger;
+    }
     
     /**
      * Read in config file and set up scheduled tasks
      */
     public void onEnable()
     {
-        messages = new LinkedList<Message>();
-        
         loadConfig(); // load messages from config
-        startMessages(); // get the messages going!
         
-        Logger.getLogger("Minecraft").info(getDescription().getName() + " version " + getDescription().getVersion() + " enabled!");
+        logger.info(getDescription().getName() + " version " + getDescription().getVersion() + " enabled!");
     }
     
     /**
@@ -36,12 +46,33 @@ public class SimpleAnnounce extends JavaPlugin
         Set<String> messageNodes; // message nodes
         ConfigurationSection messageSection; // configuration section of the messages
         
-        // if config is invalid or non-existent, throw in default
-        if (!getConfig().contains("messages"))
+        // make sure config has all required things/update if necessary
+        validateConfig();
+        
+        // delete all old tasks if they exist
+        getServer().getScheduler().cancelTasks(this);
+        
+        // load debug mode
+        if (getConfig().getBoolean("debug-mode", false))
         {
-            generateDefaultConfig();
+            logger.setLevel(Level.FINER);
         }
         
+        // load auto-reload + create task to check again if necessary
+        int reloadTime = getConfig().getInt("auto-reloadconfig", 0);
+        if (reloadTime != 0)
+        {
+            getServer().getScheduler().scheduleAsyncDelayedTask(this, new Runnable()
+            {
+                public void run()
+                {
+                    loadConfig();
+                }
+            }, reloadTime * 60 * 20L);
+            logger.fine("Will reload config in " + reloadTime + " minutes");
+        }
+        
+        // load message nodes
         messageSection = getConfig().getConfigurationSection("messages");
         messageNodes = messageSection.getKeys(false);
         
@@ -49,52 +80,84 @@ public class SimpleAnnounce extends JavaPlugin
     }
     
     /**
-     * Generate a config file with default values
+     * Validate nodes, if they don't exist or are wrong, set them
+     * and resave config
      * 
      * Unfortunately we cannot use defaults because contains will
      * return true if node set in default OR config.
      * (thatssodumb.jpg, rage.mkv, etc etc)
      */
-    private void generateDefaultConfig()
+    private void validateConfig()
     {
-        // set node values
-        getConfig().set("messages.default1.message", "This is an automatically generated repeating message!");
-        getConfig().set("messages.default1.delay", 15);
-        getConfig().set("messages.default1.repeat", 60);
-        getConfig().set("messages.default2.message", "This is another automatically generated repeating message for people with build permission!");
-        getConfig().set("messages.default2.delay", 30);
-        getConfig().set("messages.default2.repeat", 60);
-        List<String> df2Includes = new LinkedList<String>();
-        df2Includes.add("permissions.build");
-        getConfig().set("messages.default2.includesperms", df2Includes);
-        getConfig().set("messages.default3.message", "This is an automatically generated one-time message!");
-        getConfig().set("messages.default3.delay", 45);
+        boolean updated = false; // track if we've updated config
         
-        // set header for information
-        getConfig().options().header(
-                "Messages config overview:\n" +
-                "-------------------------\n" +
-                "\n" +
-                "<message label>:\n" +
-                "    message(String, required): <Message to send>\n" +
-                "    delay(int, optional - default 0): <Delay to send message on in seconds>\n" +
-                "    repeat(int, optional): <time between repeat sendings of the message in seconds>\n" +
-                "    includesperms(String list, optional):\n" +
-                "    - <only send to those with this perm>\n" +
-                "    - <and this one>\n" +
-                "    excludesperms(String list, optional):\n" +
-                "    - <don't send to those with this perm>\n" +
-                "    - <and this one>\n" +
-                "\n" +
-                "-------------------------\n" +
-                "\n" +
-                "add messages you would like under 'messages:' section\n" +
-                "");
+        // settings
+        if (!getConfig().contains("auto-reloadconfig") || !getConfig().isInt("auto-reloadconfig"))
+        {
+            getConfig().set("auto-reloadconfig", 20);
+            updated = true;
+        }
         
-        // save
-        saveConfig();
+        if (!getConfig().contains("debug-mode") || !getConfig().isBoolean("debug-mode"))
+        {
+            getConfig().set("debug-mode", false);
+            updated = true;
+        }
         
-        Logger.getLogger("Minecraft").info(getDescription().getName() + " generated new config file.");
+        // messages
+        if (!getConfig().contains("messages"))
+        {
+            getConfig().set("messages.default1.message", "This is an automatically generated repeating message!");
+            getConfig().set("messages.default1.delay", 15);
+            getConfig().set("messages.default1.repeat", 60);
+            getConfig().set("messages.default2.message", "This is another automatically generated repeating message for people with build permission!");
+            getConfig().set("messages.default2.delay", 30);
+            getConfig().set("messages.default2.repeat", 60);
+            List<String> df2Includes = new LinkedList<String>();
+            df2Includes.add("permissions.build");
+            getConfig().set("messages.default2.includesperms", df2Includes);
+            getConfig().set("messages.default3.message", "This is an automatically generated one-time message!");
+            getConfig().set("messages.default3.delay", 45);
+            updated = true;
+        }
+        
+        // if nodes have been updated, update header then save
+        if (updated)
+        {
+            // set header for information
+            getConfig().options().header(
+                    "Config nodes:\n" +
+                    "\n" +
+                    "auto-reloadconfig(int): <Time in minutes to check/reload config for message updates(0 for off)>\n" +
+                    "    NOTE: When config is reloaded, will reset delays for messages\n" +
+                    "debug-mode(boolean): <Should SimpleAnnounce print debug for what players it sends to(true/false)?>\n" +
+                    "    WARNING: lots of messages\n" +
+                    "messages: Add messages below this, see below\n" +
+                    "\n" +
+                    "Messages config overview:\n" +
+                    "-------------------------\n" +
+                    "\n" +
+                    "<message label>(String, must be unique):\n" +
+                    "    message(String, required): <Message to send>\n" +
+                    "    delay(int, optional - default 0): <Delay to send message on in seconds>\n" +
+                    "    repeat(int, optional): <time between repeat sendings of the message in seconds>\n" +
+                    "    includesperms(String list, optional):\n" +
+                    "    - <only send to those with this perm>\n" +
+                    "    - <and this one>\n" +
+                    "    excludesperms(String list, optional):\n" +
+                    "    - <don't send to those with this perm>\n" +
+                    "    - <and this one>\n" +
+                    "\n" +
+                    "-------------------------\n" +
+                    "\n" +
+                    "add messages you would like under 'messages:' section\n" +
+                    "");
+            
+            // save
+            saveConfig();
+            logger.info(getDescription().getName() + " config file updated, please check settings!");
+        }
+        
     }
     
     /**
@@ -109,6 +172,7 @@ public class SimpleAnnounce extends JavaPlugin
     {
         ConfigurationSection currentSec; // current message config section
         Message current; // current message we're working with
+        String label; // unique message label
         String message; // actual message text
         int delay; // delay of message
         int repeat; // repeat timer of message
@@ -120,6 +184,7 @@ public class SimpleAnnounce extends JavaPlugin
             currentSec = section.getConfigurationSection(messageNode);
             
             // get message info from nodes
+            label = messageNode;
             message = currentSec.getString("message");
             delay = currentSec.getInt("delay", 0);
             
@@ -129,12 +194,12 @@ public class SimpleAnnounce extends JavaPlugin
                 repeat = currentSec.getInt("repeat"); // repeat specific
                 
                 // create repeating message
-                current = new RepeatingMessage(this, message, delay, repeat);
+                current = new RepeatingMessage(this, label, message, delay, repeat);
             }
             else
             {
                 // create message
-                current = new Message(this, message, delay);
+                current = new Message(this, label, message, delay);
             }
             
             // let's add permission includes for the message now
@@ -150,26 +215,65 @@ public class SimpleAnnounce extends JavaPlugin
             }
             
             // and finally, add the message to our list
-            messages.add(current);
+            startMessage(current);
         }
     }
     
     /**
      * Kick off/schedule messages
+     * 
+     * @param message
+     *          message we are starting
      */
-    private void startMessages()
+    private void startMessage(Message message)
     {
-        for (Message message : messages)
+        if (message instanceof RepeatingMessage)
         {
-            if (message instanceof RepeatingMessage)
+            getServer().getScheduler().scheduleAsyncRepeatingTask(
+                    this, message, message.getDelay() * 20L, ((RepeatingMessage) message).getPeriod() * 20L);
+        }
+        else
+        {
+            getServer().getScheduler().scheduleSyncDelayedTask(this, message, message.getDelay() * 20L);
+        }
+    }
+    
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
+    {
+        if (command.getName().equalsIgnoreCase("simpleannounce"))
+        {
+            if (sender.hasPermission("simpleannounce"))
             {
-                getServer().getScheduler().scheduleAsyncRepeatingTask(this, message, message.getDelay() * 20L, ((RepeatingMessage) message).getPeriod() * 20L);
+                // reload command
+                if (args.length > 0 && (args[0].equalsIgnoreCase("reload") || args[0].equalsIgnoreCase("r")))
+                {
+                    if (sender.hasPermission("simpleannounce.reload"))
+                    {
+                        loadConfig();
+                        logger.fine("Config reloaded.");
+                    }
+                    else
+                    {
+                        sender.sendMessage(ChatColor.RED + "You do not have permission to do that!");
+                    }
+                }
+                // help command
+                else
+                {
+                    sender.sendMessage(ChatColor.AQUA + "/" + getCommand("simpleannounce").getName() + ChatColor.WHITE + " | " + ChatColor.BLUE
+                            + getCommand("simpleannounce").getDescription());
+                    sender.sendMessage("Usage: " + ChatColor.GRAY + getCommand("simpleannounce").getUsage());
+                }
             }
             else
             {
-                getServer().getScheduler().scheduleSyncDelayedTask(this, message, message.getDelay() * 20L);
+                sender.sendMessage(ChatColor.RED + "You do not have permission to do that!");
             }
+            return true;
         }
+        
+        return false;
     }
     
     /**
@@ -177,6 +281,6 @@ public class SimpleAnnounce extends JavaPlugin
      */
     public void onDisable()
     {
-        Logger.getLogger("Minecraft").info("SimpleAnnounce disabled.");
+        logger.info("SimpleAnnounce disabled.");
     }
 }
