@@ -62,12 +62,11 @@ public class SimpleAnnounce extends JavaPlugin
      */
     private void addMessages(Set<String> nodes, ConfigurationSection section)
     {
-        // go through all message nodes and create tasks for them
-        ConfigurationSection currentSec;
-        Message current;
-        String message;
-        int delay;
-        int repeat;
+        ConfigurationSection currentSec; // current message config section
+        Message current; // current message we're working with
+        String message; // actual message text
+        int delay; // delay of message
+        int repeat; // repeat timer of message
         
         // go through all message nodes and get data from it
         for (String messageNode : nodes)
@@ -85,12 +84,12 @@ public class SimpleAnnounce extends JavaPlugin
                 repeat = currentSec.getInt("repeat"); // repeat specific
                 
                 // create repeating message
-                current = new RepeatingMessage(message, delay, repeat);
+                current = new RepeatingMessage(this, message, delay, repeat);
             }
             else
             {
                 // create message
-                current = new Message(message, delay);
+                current = new Message(this, message, delay);
             }
             
             // let's add permission includes for the message now

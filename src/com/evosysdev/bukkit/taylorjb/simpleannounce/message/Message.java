@@ -3,8 +3,14 @@ package com.evosysdev.bukkit.taylorjb.simpleannounce.message;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.bukkit.entity.Player;
+
+import com.evosysdev.bukkit.taylorjb.simpleannounce.SimpleAnnounce;
+
 public class Message implements Runnable
 {
+    private SimpleAnnounce plugin; // instance of our plugin
+    
     private String message; // message to send
     private int delay; // delay in seconds for message
     private List<String> permissionIncludes, // permission nodes message receivers should include
@@ -18,7 +24,7 @@ public class Message implements Runnable
      * @param delay
      *            message's delay
      */
-    public Message(String message, int delay)
+    public Message(SimpleAnnounce plugin, String message, int delay)
     {
         this.message = message;
         this.delay = delay;
@@ -80,8 +86,61 @@ public class Message implements Runnable
     }
     
     @Override
+    /**
+     * Send the message!
+     */
     public void run()
     {
-        // TODO
+        // no includes or excludes so we can just broadcast, yay!
+        if (permissionIncludes.isEmpty() && permissionExcludes.isEmpty())
+        {
+            plugin.getServer().broadcastMessage(message);
+        }
+        // excludes are empy and only 1 include, send to those with include
+        else if (permissionExcludes.isEmpty() && permissionIncludes.size() == 1)
+        {
+            plugin.getServer().broadcast(message, permissionIncludes.get(0));
+        }
+        // no built-in api to do this so send a message to all online players
+        else
+        {
+            // ensure player satisfies reqs to get messages
+            boolean satisfiesIncl, satisfiesExcl;
+            
+            for (Player player : plugin.getServer().getOnlinePlayers())
+            {
+                // reset to true until proven false
+                satisfiesIncl = true;
+                satisfiesExcl = true;
+                
+                // go through includes, ensure user has all of the permission nodes
+                for (String include : permissionIncludes)
+                {
+                    // does not have includes permission!
+                    if (!player.hasPermission(include))
+                    {
+                        satisfiesIncl = false;
+                        break; // no need to continue loop
+                    }
+                }
+                
+                // go through includes, ensure user has all of the permission nodes
+                for (String exclude : permissionExcludes)
+                {
+                    // does not have includes permission!
+                    if (player.hasPermission(exclude))
+                    {
+                        satisfiesExcl = false;
+                        break; // no need to continue loop
+                    }
+                }
+                
+                // satisfies requirements, send message
+                if (satisfiesIncl && satisfiesExcl)
+                {
+                    player.sendMessage(message);
+                }
+            }
+        }
     }
 }
