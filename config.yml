@@ -1,10 +1,21 @@
-# Messages have 4 possible config nodes:
-#     message(String, required): Message to send
-#     delay(int, optional - default 0): Delay to send message on
-#     repeat(int, optional - defalut no repeat): time between repeat sendings of the message
-#     includesperms(String list, optional - default none): permissions nodes to filter who receives message
+# Messages config overview:
+# -------------------------
 #
-# add messages you would like under here
+# <message label>:
+#     message(String, required): <Message to send>
+#     delay(int, optional - default 0): <Delay to send message on in seconds>
+#     repeat(int, optional): <time between repeat sendings of the message in seconds>
+#     includesperms(String list, optional):
+#     - <only send to those with this perm>
+#     - <and this one>
+#     excludesperms(String list, optional):
+#     - <don't send to those with this perm>
+#     - <and this one>
+#
+# -------------------------
+#
+# add messages you would like under 'messages:' section
+#
 messages:
     default1:
         message: This is an automatically generated repeating message!

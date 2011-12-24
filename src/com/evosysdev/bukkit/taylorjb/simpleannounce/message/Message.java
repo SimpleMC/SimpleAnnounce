@@ -7,7 +7,8 @@ public class Message implements Runnable
 {
     private String message; // message to send
     private int delay; // delay in seconds for message
-    private List<String> permissionIncludes; // permission nodes message receivers should include
+    private List<String> permissionIncludes, // permission nodes message receivers should include
+            permissionExcludes; // permission nodes message receivers should exclude
     
     /**
      * Create delayed message
@@ -21,8 +22,9 @@ public class Message implements Runnable
     {
         this.message = message;
         this.delay = delay;
-        
+
         permissionIncludes = new LinkedList<String>();
+        permissionExcludes = new LinkedList<String>();
     }
     
     /**
@@ -31,7 +33,7 @@ public class Message implements Runnable
      * @param node
      *            node receivers should include
      */
-    public void addPermission(String node)
+    public void addPermissionIncl(String node)
     {
         permissionIncludes.add(node);
     }
@@ -42,9 +44,31 @@ public class Message implements Runnable
      * @param nodes
      *            nodes receivers should include
      */
-    public void addPermissions(List<String> nodes)
+    public void addPermissionsIncl(List<String> nodes)
     {
         permissionIncludes.addAll(nodes);
+    }
+    
+    /**
+     * Add a permission exclude for the message receivers
+     * 
+     * @param node
+     *            node receivers should exclude
+     */
+    public void addPermissionExcl(String node)
+    {
+        permissionExcludes.add(node);
+    }
+    
+    /**
+     * Add permission exclude for the message receivers
+     * 
+     * @param nodes
+     *            nodes receivers should exclude
+     */
+    public void addPermissionsExcl(List<String> nodes)
+    {
+        permissionExcludes.addAll(nodes);
     }
     
     /**

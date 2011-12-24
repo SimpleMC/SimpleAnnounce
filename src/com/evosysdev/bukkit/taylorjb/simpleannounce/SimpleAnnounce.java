@@ -69,6 +69,7 @@ public class SimpleAnnounce extends JavaPlugin
         int delay;
         int repeat;
         
+        // go through all message nodes and get data from it
         for (String messageNode : nodes)
         {
             // set current section
@@ -95,7 +96,13 @@ public class SimpleAnnounce extends JavaPlugin
             // let's add permission includes for the message now
             if (currentSec.contains("includesperms"))
             {
-                current.addPermissions(currentSec.getList("includesperms"));
+                current.addPermissionsIncl(currentSec.getList("includesperms"));
+            }
+            
+            // let's add permission includes for the message now
+            if (currentSec.contains("excludesperms"))
+            {
+                current.addPermissionsExcl(currentSec.getList("excludesperms"));
             }
             
             // and finally, add the message to our list
