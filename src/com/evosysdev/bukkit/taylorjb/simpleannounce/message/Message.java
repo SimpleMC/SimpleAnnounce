@@ -2,9 +2,6 @@ package com.evosysdev.bukkit.taylorjb.simpleannounce.message;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
-import java.util.logging.StreamHandler;
 
 import org.bukkit.entity.Player;
 
@@ -18,7 +15,6 @@ public class Message implements Runnable
     private int delay; // delay in seconds for message
     private List<String> permissionIncludes, // permission nodes message receivers should include
             permissionExcludes; // permission nodes message receivers should exclude
-    private Logger logger; // message's logger
     
     /**
      * Create delayed message
@@ -38,9 +34,7 @@ public class Message implements Runnable
         permissionIncludes = new LinkedList<String>();
         permissionExcludes = new LinkedList<String>();
         
-        logger = Logger.getLogger(Message.class.getName() + "." + label);
-        logger.setLevel(SimpleAnnounce.getLogger().getLevel());
-        logger.finer("Message " + label + " created on delay " + delay);
+        plugin.getLogger().finer("Message " + label + " created on delay " + delay);
     }
     
     /**
@@ -52,7 +46,7 @@ public class Message implements Runnable
     public void addPermissionIncl(String node)
     {
         permissionIncludes.add(node);
-        logger.fine("PermissionIncludes: " + permissionIncludes.toString());
+        plugin.getLogger().fine("PermissionIncludes: " + permissionIncludes.toString());
     }
     
     /**
@@ -64,7 +58,7 @@ public class Message implements Runnable
     public void addPermissionsIncl(List<String> nodes)
     {
         permissionIncludes.addAll(nodes);
-        logger.fine("PermissionIncludes: " + permissionIncludes.toString());
+        plugin.getLogger().fine("PermissionIncludes: " + permissionIncludes.toString());
     }
     
     /**
@@ -76,7 +70,7 @@ public class Message implements Runnable
     public void addPermissionExcl(String node)
     {
         permissionExcludes.add(node);
-        logger.fine("PermissionExcludes: " + permissionExcludes.toString());
+        plugin.getLogger().fine("PermissionExcludes: " + permissionExcludes.toString());
     }
     
     /**
@@ -88,7 +82,7 @@ public class Message implements Runnable
     public void addPermissionsExcl(List<String> nodes)
     {
         permissionExcludes.addAll(nodes);
-        logger.fine("PermissionExcludes: " + permissionExcludes.toString());
+        plugin.getLogger().fine("PermissionExcludes: " + permissionExcludes.toString());
     }
     
     /**
@@ -113,13 +107,13 @@ public class Message implements Runnable
      */
     public void run()
     {
-        logger.fine("Running message " + label);
+        plugin.getLogger().fine("Running message " + label);
         
         // no includes or excludes so we can just broadcast, yay!
         if (permissionIncludes.isEmpty() && permissionExcludes.isEmpty())
         {
             plugin.getServer().broadcastMessage(message);
-            logger.finer("Broadcasting message to everyone");
+            plugin.getLogger().finer("Broadcasting message to everyone");
         }
         // send message to all users that satisfy includes/excludes
         else
@@ -143,7 +137,7 @@ public class Message implements Runnable
                     // does not have includes permission!
                     if (!player.hasPermission(include))
                     {
-                        logger.finer("Not sending to " + player.getDisplayName() + ": Does not satisfy " + include + " permission include");
+                        plugin.getLogger().finer("Not sending to " + player.getDisplayName() + ": Does not satisfy " + include + " permission include");
                         satisfiesIncl = false;
                         break; // no need to continue loop
                     }
@@ -155,7 +149,7 @@ public class Message implements Runnable
                     // has excludes permission!
                     if (player.hasPermission(exclude))
                     {
-                        logger.finer("Not sending to " + player.getDisplayName() + ": Does not satisfy " + exclude + " permission exclude");
+                        plugin.getLogger().finer("Not sending to " + player.getDisplayName() + ": Does not satisfy " + exclude + " permission exclude");
                         satisfiesExcl = false;
                         break; // no need to continue loop
                     }
@@ -164,7 +158,7 @@ public class Message implements Runnable
                 // satisfies requirements, send message
                 if (satisfiesIncl && satisfiesExcl)
                 {
-                    logger.finest("Sending to " + player.getDisplayName());
+                    plugin.getLogger().finest("Sending to " + player.getDisplayName());
                     player.sendMessage(message);
                 }
             }

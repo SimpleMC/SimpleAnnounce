@@ -4,7 +4,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -17,17 +16,6 @@ import com.evosysdev.bukkit.taylorjb.simpleannounce.message.RepeatingMessage;
 
 public class SimpleAnnounce extends JavaPlugin
 {
-    // our logger
-    private static Logger logger = Logger.getLogger(SimpleAnnounce.class.getName());
-    
-    /**
-     * @return SimpleAnnounce logger
-     */
-    public static Logger getLogger()
-    {
-        return logger;
-    }
-    
     /**
      * Read in config file and set up scheduled tasks
      */
@@ -35,7 +23,7 @@ public class SimpleAnnounce extends JavaPlugin
     {
         loadConfig(); // load messages from config
         
-        logger.info(getDescription().getName() + " version " + getDescription().getVersion() + " enabled!");
+        getLogger().info(getDescription().getName() + " version " + getDescription().getVersion() + " enabled!");
     }
     
     /**
@@ -55,7 +43,7 @@ public class SimpleAnnounce extends JavaPlugin
         // load debug mode
         if (getConfig().getBoolean("debug-mode", false))
         {
-            logger.setLevel(Level.FINER);
+            getLogger().setLevel(Level.FINER);
         }
         
         // load auto-reload + create task to check again if necessary
@@ -70,7 +58,7 @@ public class SimpleAnnounce extends JavaPlugin
                     loadConfig();
                 }
             }, reloadTime * 60 * 20L);
-            logger.fine("Will reload config in " + reloadTime + " minutes");
+            getLogger().fine("Will reload config in " + reloadTime + " minutes");
         }
         
         // load message nodes
@@ -156,7 +144,7 @@ public class SimpleAnnounce extends JavaPlugin
             
             // save
             saveConfig();
-            logger.info(getDescription().getName() + " config file updated, please check settings!");
+            getLogger().info(getDescription().getName() + " config file updated, please check settings!");
         }
         
     }
@@ -169,6 +157,7 @@ public class SimpleAnnounce extends JavaPlugin
      * @param section
      *            currnet config section
      */
+    @SuppressWarnings("unchecked")
     private void addMessages(Set<String> nodes, ConfigurationSection section)
     {
         ConfigurationSection currentSec; // current message config section
@@ -254,7 +243,7 @@ public class SimpleAnnounce extends JavaPlugin
                         reloadConfig(); // reload file
                         loadConfig(); // read config
                         
-                        logger.fine("Config reloaded.");
+                        getLogger().fine("Config reloaded.");
                         sender.sendMessage("SimpleAnnounce config reloaded");
                     }
                     else
@@ -285,6 +274,6 @@ public class SimpleAnnounce extends JavaPlugin
      */
     public void onDisable()
     {
-        logger.info("SimpleAnnounce disabled.");
+        getLogger().info("SimpleAnnounce disabled.");
     }
 }
