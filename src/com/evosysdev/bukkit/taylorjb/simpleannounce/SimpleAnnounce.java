@@ -157,7 +157,6 @@ public class SimpleAnnounce extends JavaPlugin
      * @param section
      *            currnet config section
      */
-    @SuppressWarnings("unchecked")
     private void addMessages(Set<String> nodes, ConfigurationSection section)
     {
         ConfigurationSection currentSec; // current message config section
