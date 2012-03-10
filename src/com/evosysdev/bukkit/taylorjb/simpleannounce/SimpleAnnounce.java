@@ -195,13 +195,13 @@ public class SimpleAnnounce extends JavaPlugin
             // let's add permission includes for the message now
             if (currentSec.contains("includesperms"))
             {
-                current.addPermissionsIncl(currentSec.getList("includesperms"));
+                current.addPermissionsIncl(currentSec.getStringList("includesperms"));
             }
             
             // let's add permission excludes for the message now
             if (currentSec.contains("excludesperms"))
             {
-                current.addPermissionsExcl(currentSec.getList("excludesperms"));
+                current.addPermissionsExcl(currentSec.getStringList("excludesperms"));
             }
             
             // and finally, add the message to our list
