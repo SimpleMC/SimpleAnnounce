@@ -50,7 +50,7 @@ public class SimpleAnnounce extends JavaPlugin
         int reloadTime = getConfig().getInt("auto-reloadconfig", 0);
         if (reloadTime != 0)
         {
-            getServer().getScheduler().scheduleAsyncDelayedTask(this, new Runnable()
+            getServer().getScheduler().runTaskLaterAsynchronously(this, new Runnable()
             {
                 public void run()
                 {
@@ -218,7 +218,7 @@ public class SimpleAnnounce extends JavaPlugin
     {
         if (message instanceof RepeatingMessage)
         {
-            getServer().getScheduler().scheduleAsyncRepeatingTask(
+            getServer().getScheduler().scheduleSyncRepeatingTask(
                     this, message, message.getDelay() * 20L, ((RepeatingMessage) message).getPeriod() * 20L);
         }
         else
