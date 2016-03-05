@@ -1,15 +1,20 @@
 package org.simplemc.simpleannounce.message;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
 import org.bukkit.Server;
-import org.bukkit.entity.Player;
 
 import org.simplemc.simpleannounce.SimpleAnnounce;
 
-public class Message implements Runnable
+/**
+ * Message container
+ *
+ * @author Taylor Becker
+ */
+public class Message
 {
     private int delay; // delay in seconds for message
 
@@ -100,74 +105,43 @@ public class Message implements Runnable
         return delay;
     }
 
-    @Override
     /**
-     * Send the message!
+     * Get the (string) message to send
+     *
+     * @return the message to send
      */
-    public void run()
+    public String getMessage()
     {
-        // if no one is online, no sense in running the message
-        if (server.getOnlinePlayers().size() == 0)
-        {
-            logger.fine("Skipping message...no players online.");
-            return;
-        }
+        return message;
+    }
 
-        logger.fine("Running message " + label);
+    /**
+     * Get unmodifiable list of permission includes
+     *
+     * @return unmodifiable list of permission includes
+     */
+    public List<String> getPermissionIncludes()
+    {
+        return Collections.unmodifiableList(permissionIncludes);
+    }
 
-        // no includes or excludes so we can just broadcast, yay!
-        if (permissionIncludes.isEmpty() && permissionExcludes.isEmpty())
-        {
-            server.broadcastMessage(message);
-            logger.finer("Broadcasting message to everyone");
-        }
-        // send message to all users that satisfy includes/excludes
-        else
-        {
-            // ensure player satisfies reqs to get messages
-            boolean satisfiesIncl, satisfiesExcl;
+    /**
+     * Get unmodifiable list of permission includes
+     *
+     * @return unmodifiable list of permission includes
+     */
+    public List<String> getPermissionExcludes()
+    {
+        return Collections.unmodifiableList(permissionExcludes);
+    }
 
-            for (Player player : server.getOnlinePlayers())
-            {
-                // safe-guard
-                if (player == null)
-                    continue;
-
-                // reset to true until proven false
-                satisfiesIncl = true;
-                satisfiesExcl = true;
-
-                // go through includes, ensure user has all of the permission nodes
-                for (String include : permissionIncludes)
-                {
-                    // does not have includes permission!
-                    if (!player.hasPermission(include))
-                    {
-                        logger.finer("Not sending to " + player.getDisplayName() + ": Does not satisfy " + include + " permission include");
-                        satisfiesIncl = false;
-                        break; // no need to continue loop
-                    }
-                }
-
-                // go through includes, ensure user has all of the permission nodes
-                for (String exclude : permissionExcludes)
-                {
-                    // has excludes permission!
-                    if (player.hasPermission(exclude))
-                    {
-                        logger.finer("Not sending to " + player.getDisplayName() + ": Does not satisfy " + exclude + " permission exclude");
-                        satisfiesExcl = false;
-                        break; // no need to continue loop
-                    }
-                }
-
-                // satisfies requirements, send message
-                if (satisfiesIncl && satisfiesExcl)
-                {
-                    logger.finest("Sending to " + player.getDisplayName());
-                    player.sendMessage(message);
-                }
-            }
-        }
+    /**
+     * Check if message is a broadcast(all players) message
+     *
+     * @return if message is a broadcast(all players) message
+     */
+    public boolean isBroadcaseMessage()
+    {
+        return permissionIncludes.isEmpty() && permissionExcludes.isEmpty();
     }
 }

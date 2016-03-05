@@ -13,6 +13,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import org.simplemc.simpleannounce.message.Message;
 import org.simplemc.simpleannounce.message.RepeatingMessage;
+import org.simplemc.simpleannounce.message.sender.ChatMessageSender;
+import org.simplemc.simpleannounce.message.sender.MessageSender;
 
 public class SimpleAnnounce extends JavaPlugin
 {
@@ -71,7 +73,7 @@ public class SimpleAnnounce extends JavaPlugin
     /**
      * Validate nodes, if they don't exist or are wrong, set them
      * and resave config
-     * <p/>
+     * <p>
      * Unfortunately we cannot use defaults because contains will
      * return true if node set in default OR config.
      * (thatssodumb.jpg, rage.mkv, etc etc)
@@ -128,6 +130,7 @@ public class SimpleAnnounce extends JavaPlugin
                             "\n" +
                             "<message label>(String, must be unique):\n" +
                             "    message(String, required): <Message to send>\n" +
+                            "    sender(String, optional): <Message Sender(default: chat)>\n" +
                             "    delay(int, optional - default 0): <Delay to send message on in seconds>\n" +
                             "    repeat(int, optional): <time between repeat sendings of the message in seconds>\n" +
                             "    includesperms(String list, optional):\n" +
@@ -159,6 +162,7 @@ public class SimpleAnnounce extends JavaPlugin
     {
         ConfigurationSection currentSec; // current message config section
         Message current; // current message we're working with
+        MessageSender sender; // message sender
         String label; // unique message label
         String message; // actual message text
         int delay; // delay of message
@@ -201,26 +205,37 @@ public class SimpleAnnounce extends JavaPlugin
                 current.addPermissionsExcl(currentSec.getStringList("excludesperms"));
             }
 
+            // get message sender
+            String senderString = currentSec.getString("sender", "chat");
+            switch (senderString)
+            {
+                case "chat":
+                default:
+                    sender = new ChatMessageSender(this, current);
+                    break;
+            }
+
             // and finally, add the message to our list
-            startMessage(current);
+            startMessage(current, sender);
         }
     }
 
     /**
      * Kick off/schedule messages
      *
-     * @param message message we are starting
+     * @param message       message we are starting
+     * @param messageSender sender for the message
      */
-    private void startMessage(Message message)
+    private void startMessage(Message message, MessageSender messageSender)
     {
         if (message instanceof RepeatingMessage)
         {
-            getServer().getScheduler().scheduleSyncRepeatingTask(
-                    this, message, message.getDelay() * 20L, ((RepeatingMessage) message).getPeriod() * 20L);
+            getServer().getScheduler().runTaskTimer(
+                    this, messageSender, message.getDelay() * 20L, ((RepeatingMessage) message).getPeriod() * 20L);
         }
         else
         {
-            getServer().getScheduler().scheduleSyncDelayedTask(this, message, message.getDelay() * 20L);
+            getServer().getScheduler().runTaskLater(this, messageSender, message.getDelay() * 20L);
         }
     }
 
@@ -266,10 +281,13 @@ public class SimpleAnnounce extends JavaPlugin
     }
 
     /**
-     * plugin disabled
+     * Plugin disabled
      */
+    @Override
     public void onDisable()
     {
+        getLogger().info("Cancelling running tasks...");
+        getServer().getScheduler().cancelTasks(this);
         getLogger().info("SimpleAnnounce disabled.");
     }
 }
