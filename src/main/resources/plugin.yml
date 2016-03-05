@@ -1,8 +1,8 @@
 name: SimpleAnnounce
 main: org.simplemc.simpleannounce.SimpleAnnounce
 version: 0.6.0
-website: http://dev.bukkit.org/server-mods/simpleannounce/
-author: taylorjb
+website: http://SimpleMC.org/simpleannounce/
+author: Taylor Becker
 permissions:
     simpleannounce:
         description: Gives access to SimpleAnnounce help command
