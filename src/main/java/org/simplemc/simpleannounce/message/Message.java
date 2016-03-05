@@ -5,12 +5,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.bukkit.Server;
-
 import org.simplemc.simpleannounce.SimpleAnnounce;
 
 /**
- * Message container
+ * Announcement Message container
  *
  * @author Taylor Becker
  */
@@ -19,7 +17,6 @@ public class Message
     private int delay; // delay in seconds for message
 
     private Logger logger; // our logger
-    private Server server; // server running the plugin
     private String message, // message to send
             label; // unique message label
     private List<String> permissionIncludes, // permission nodes message receivers should include
@@ -37,11 +34,11 @@ public class Message
         this.message = message;
         this.delay = delay;
 
-        permissionIncludes = new LinkedList<String>();
-        permissionExcludes = new LinkedList<String>();
+        permissionIncludes = new LinkedList<>();
+        permissionExcludes = new LinkedList<>();
 
         this.logger = plugin.getLogger();
-        this.server = plugin.getServer();
+
         logger.finer("Message " + label + " created on delay " + delay);
     }
 

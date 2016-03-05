@@ -55,7 +55,7 @@ public class ChatMessageSender extends MessageSender
                 // ensure player is neither missing any excludes
                 boolean skipPlayer =
                         message.getPermissionIncludes().stream().anyMatch(perm -> !player.hasPermission(perm)) ||
-                                message.getPermissionExcludes().stream().anyMatch(perm -> player.hasPermission(perm));
+                                message.getPermissionExcludes().stream().anyMatch(player::hasPermission);
 
                 // send message if player has appropriate permissions
                 if (!skipPlayer)

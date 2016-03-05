@@ -2,6 +2,11 @@ package org.simplemc.simpleannounce.message;
 
 import org.simplemc.simpleannounce.SimpleAnnounce;
 
+/**
+ * Repeating announcement message
+ *
+ * @author Taylor Becker
+ */
 public class RepeatingMessage extends Message
 {
     private int period; // period of the repeating message

@@ -16,6 +16,13 @@ import org.simplemc.simpleannounce.message.RepeatingMessage;
 import org.simplemc.simpleannounce.message.sender.ChatMessageSender;
 import org.simplemc.simpleannounce.message.sender.MessageSender;
 
+/**
+ * SimpleAnnounce main plugin
+ * <p>
+ * SimpleAnnounce is a simple and easy to use automated announcement plugin
+ * </p>
+ * @author Taylor Becker
+ */
 public class SimpleAnnounce extends JavaPlugin
 {
     /**
@@ -52,13 +59,10 @@ public class SimpleAnnounce extends JavaPlugin
         int reloadTime = getConfig().getInt("auto-reloadconfig", 0);
         if (reloadTime != 0)
         {
-            getServer().getScheduler().runTaskLaterAsynchronously(this, new Runnable()
+            getServer().getScheduler().runTaskLaterAsynchronously(this, () ->
             {
-                public void run()
-                {
-                    reloadConfig();
-                    loadConfig();
-                }
+                reloadConfig();
+                loadConfig();
             }, reloadTime * 60 * 20L);
             getLogger().fine("Will reload config in " + reloadTime + " minutes");
         }
@@ -77,6 +81,7 @@ public class SimpleAnnounce extends JavaPlugin
      * Unfortunately we cannot use defaults because contains will
      * return true if node set in default OR config.
      * (thatssodumb.jpg, rage.mkv, etc etc)
+     * </p>
      */
     private void validateConfig()
     {
@@ -104,7 +109,7 @@ public class SimpleAnnounce extends JavaPlugin
             getConfig().set("messages.default2.message", "This is another automatically generated repeating message for people with build permission!");
             getConfig().set("messages.default2.delay", 30);
             getConfig().set("messages.default2.repeat", 60);
-            List<String> df2Includes = new LinkedList<String>();
+            List<String> df2Includes = new LinkedList<>();
             df2Includes.add("permissions.build");
             getConfig().set("messages.default2.includesperms", df2Includes);
             getConfig().set("messages.default3.message", "This is an automatically generated one-time message!");
