@@ -144,6 +144,7 @@ public class SimpleAnnounce extends JavaPlugin
                     "        hold(int, optional): <Time in sections for bar to be displayed on announce>\n" +
                     "        color(String, optional): <bar color(https://hub.spigotmc.org/javadocs/spigot/org/bukkit/boss/BarColor.html)>\n" +
                     "        style(String, optional): <bar style(https://hub.spigotmc.org/javadocs/spigot/org/bukkit/boss/BarStyle.html)>\n" +
+                    "        animate(boolean, optional): <if bar should animate hold time>\n" +
                     "    delay(int, optional - default 0): <Delay to send message on in seconds>\n" +
                     "    repeat(int, optional): <time between repeat sendings of the message in seconds>\n" +
                     "    includesperms(String list, optional):\n" +
@@ -228,7 +229,8 @@ public class SimpleAnnounce extends JavaPlugin
                             current,
                             currentSec.getInt("bar.hold", 5),
                             BarColor.valueOf(currentSec.getString("bar.color", "PURPLE").toUpperCase()),
-                            BarStyle.valueOf(currentSec.getString("bar.style", "SOLID").toUpperCase()));
+                            BarStyle.valueOf(currentSec.getString("bar.style", "SOLID").toUpperCase()),
+                            currentSec.getBoolean("bar.animate", true));
                     break;
                 case "chat":
                 default:

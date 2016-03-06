@@ -5,6 +5,7 @@ import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import org.simplemc.simpleannounce.message.Message;
 import org.simplemc.simpleannounce.message.RepeatingMessage;
@@ -20,19 +21,25 @@ public class BossBarSender extends MessageSender
 {
     private BossBar bossBar; // the boss bar
 
-    private int holdTime; // amount of time message should stay on boss bar
+    private long holdTime; // amount of time message should stay on boss bar
+    private boolean animate; // if the bar should animate or not(displaying remaining hold time)
 
     /**
      * Init boss bar message sender
      *
-     * @param plugin  the plugin instance
-     * @param message message to send
+     * @param plugin   the plugin instance
+     * @param message  message to send
+     * @param holdTime time (in seconds) to keep boss bar on screen
+     * @param color    color of the boss bar
+     * @param style    style of the boss bar
+     * @param animate  if the bar should animate or not(displaying remaining hold time)
      */
-    public BossBarSender(Plugin plugin, Message message, int holdTime, BarColor color, BarStyle style)
+    public BossBarSender(Plugin plugin, Message message, int holdTime, BarColor color, BarStyle style, boolean animate)
     {
         super(plugin, message);
 
-        this.holdTime = holdTime;
+        this.holdTime = holdTime * 20L;
+        this.animate = animate;
 
         // create boss bar
         bossBar = Bukkit.createBossBar(message.getMessage(), color, style);
@@ -42,6 +49,7 @@ public class BossBarSender extends MessageSender
     @Override
     public void run()
     {
+
         // add all players that should receive the message to the boss bar
         Bukkit.getOnlinePlayers().stream()
                 .filter(Objects::nonNull)
@@ -51,8 +59,34 @@ public class BossBarSender extends MessageSender
         // show the boss bar
         bossBar.show();
 
+        // animate
+        final BukkitTask animationTask;
+        if (animate)
+        {
+            animationTask = Bukkit.getScheduler().runTaskTimer(plugin, () ->
+                            bossBar.setProgress(bossBar.getProgress() - (1.0 / holdTime))
+                    , 0, 1L);
+        }
+        else
+        {
+            animationTask = null;
+        }
+
         // schedule boss bar to go away
         Runnable hideBossBar = message instanceof RepeatingMessage ? bossBar::hide : bossBar::removeAll;
-        Bukkit.getScheduler().runTaskLater(plugin, hideBossBar, holdTime * 20L);
+        Bukkit.getScheduler().runTaskLater(plugin, () ->
+        {
+            // reset progress
+            bossBar.setProgress(1);
+
+            // hide bar
+            hideBossBar.run();
+
+            // cancel animation task
+            if (animationTask != null)
+            {
+                Bukkit.getScheduler().cancelTask(animationTask.getTaskId());
+            }
+        }, holdTime);
     }
 }
