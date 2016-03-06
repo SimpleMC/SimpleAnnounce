@@ -22,7 +22,8 @@ public class BossBarSender extends MessageSender
     private BossBar bossBar; // the boss bar
 
     private long holdTime; // amount of time message should stay on boss bar
-    private boolean animate; // if the bar should animate or not(displaying remaining hold time)
+    private boolean animate, // if the bar should animate or not(displaying remaining hold time)
+            reverse; // if the animation should be moving in reverse
 
     /**
      * Init boss bar message sender
@@ -33,23 +34,26 @@ public class BossBarSender extends MessageSender
      * @param color    color of the boss bar
      * @param style    style of the boss bar
      * @param animate  if the bar should animate or not(displaying remaining hold time)
+     * @param reverse  if the animation should be moving in reverse
      */
-    public BossBarSender(Plugin plugin, Message message, int holdTime, BarColor color, BarStyle style, boolean animate)
+    public BossBarSender(Plugin plugin, Message message, int holdTime, BarColor color, BarStyle style, boolean animate, boolean reverse)
     {
         super(plugin, message);
 
         this.holdTime = holdTime * 20L;
         this.animate = animate;
+        this.reverse = reverse;
 
         // create boss bar
         bossBar = Bukkit.createBossBar(message.getMessage(), color, style);
-        bossBar.setProgress(1);
+
+        // set initial progress
+        bossBar.setProgress(reverse ? 1 : 0);
     }
 
     @Override
     public void run()
     {
-
         // add all players that should receive the message to the boss bar
         Bukkit.getOnlinePlayers().stream()
                 .filter(Objects::nonNull)
@@ -64,7 +68,7 @@ public class BossBarSender extends MessageSender
         if (animate)
         {
             animationTask = Bukkit.getScheduler().runTaskTimer(plugin, () ->
-                            bossBar.setProgress(bossBar.getProgress() - (1.0 / holdTime))
+                            bossBar.setProgress(bossBar.getProgress() + ((reverse ? -1 : 1) * (1.0 / holdTime)))
                     , 0, 1L);
         }
         else
@@ -77,7 +81,7 @@ public class BossBarSender extends MessageSender
         Bukkit.getScheduler().runTaskLater(plugin, () ->
         {
             // reset progress
-            bossBar.setProgress(1);
+            bossBar.setProgress(reverse ? 1 : 0);
 
             // hide bar
             hideBossBar.run();
