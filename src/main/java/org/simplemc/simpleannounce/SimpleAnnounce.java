@@ -6,6 +6,8 @@ import java.util.Set;
 import java.util.logging.Level;
 
 import org.bukkit.ChatColor;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -13,6 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import org.simplemc.simpleannounce.message.Message;
 import org.simplemc.simpleannounce.message.RepeatingMessage;
+import org.simplemc.simpleannounce.message.sender.BossBarSender;
 import org.simplemc.simpleannounce.message.sender.ChatMessageSender;
 import org.simplemc.simpleannounce.message.sender.MessageSender;
 
@@ -21,6 +24,7 @@ import org.simplemc.simpleannounce.message.sender.MessageSender;
  * <p>
  * SimpleAnnounce is a simple and easy to use automated announcement plugin
  * </p>
+ *
  * @author Taylor Becker
  */
 public class SimpleAnnounce extends JavaPlugin
@@ -64,6 +68,7 @@ public class SimpleAnnounce extends JavaPlugin
                 reloadConfig();
                 loadConfig();
             }, reloadTime * 60 * 20L);
+
             getLogger().fine("Will reload config in " + reloadTime + " minutes");
         }
 
@@ -121,34 +126,37 @@ public class SimpleAnnounce extends JavaPlugin
         if (updated)
         {
             // set header for information
-            getConfig().options().header(
-                    "Config nodes:\n" +
-                            "\n" +
-                            "auto-reloadconfig(int): <Time in minutes to check/reload config for message updates(0 for off)>\n" +
-                            "    NOTE: When config is reloaded, will reset delays for messages and cause one-time messages to resend\n" +
-                            "debug-mode(boolean): <Should we pring debug to server.log(true/false)?>\n" +
-                            "    NOTE: Look for fine and finer level log messages in server.log\n" +
-                            "messages: Add messages below this, see below\n" +
-                            "\n" +
-                            "Messages config overview:\n" +
-                            "-------------------------\n" +
-                            "\n" +
-                            "<message label>(String, must be unique):\n" +
-                            "    message(String, required): <Message to send>\n" +
-                            "    sender(String, optional): <Message Sender(default: chat)>\n" +
-                            "    delay(int, optional - default 0): <Delay to send message on in seconds>\n" +
-                            "    repeat(int, optional): <time between repeat sendings of the message in seconds>\n" +
-                            "    includesperms(String list, optional):\n" +
-                            "    - <only send to those with this perm>\n" +
-                            "    - <and this one>\n" +
-                            "    excludesperms(String list, optional):\n" +
-                            "    - <don't send to those with this perm>\n" +
-                            "    - <and this one>\n" +
-                            "\n" +
-                            "-------------------------\n" +
-                            "\n" +
-                            "add messages you would like under 'messages:' section\n" +
-                            "");
+            getConfig().options().header("Config nodes:\n" +
+                    "\n" +
+                    "auto-reloadconfig(int): <Time in minutes to check/reload config for message updates(0 for off)>\n" +
+                    "    NOTE: When config is reloaded, will reset delays for messages and cause one-time messages to resend\n" +
+                    "debug-mode(boolean): <Should we pring debug to server.log(true/false)?>\n" +
+                    "    NOTE: Look for fine and finer level log messages in server.log\n" +
+                    "messages: Add messages below this, see below\n" +
+                    "\n" +
+                    "Messages config overview:\n" +
+                    "-------------------------\n" +
+                    "\n" +
+                    "<message label>(String, must be unique):\n" +
+                    "    message(String, required): <Message to send>\n" +
+                    "    sender(String, optional): <Message Sender(chat or boss, default: chat)>\n" +
+                    "    bar(section, optional):\n" +
+                    "        hold(int, optional): <Time in sections for bar to be displayed on announce>\n" +
+                    "        color(String, optional): <bar color(https://hub.spigotmc.org/javadocs/spigot/org/bukkit/boss/BarColor.html)>\n" +
+                    "        style(String, optional): <bar style(https://hub.spigotmc.org/javadocs/spigot/org/bukkit/boss/BarStyle.html)>\n" +
+                    "    delay(int, optional - default 0): <Delay to send message on in seconds>\n" +
+                    "    repeat(int, optional): <time between repeat sendings of the message in seconds>\n" +
+                    "    includesperms(String list, optional):\n" +
+                    "    - <only send to those with this perm>\n" +
+                    "    - <and this one>\n" +
+                    "    excludesperms(String list, optional):\n" +
+                    "    - <don't send to those with this perm>\n" +
+                    "    - <and this one>\n" +
+                    "\n" +
+                    "-------------------------\n" +
+                    "\n" +
+                    "add messages you would like under 'messages:' section\n" +
+                    "");
 
             // save
             saveConfig();
@@ -181,7 +189,7 @@ public class SimpleAnnounce extends JavaPlugin
 
             // get message info from nodes
             label = messageNode;
-            message = currentSec.getString("message");
+            message = ChatColor.translateAlternateColorCodes('&', currentSec.getString("message"));
             delay = currentSec.getInt("delay", 0);
 
             // repeating message
@@ -211,9 +219,17 @@ public class SimpleAnnounce extends JavaPlugin
             }
 
             // get message sender
-            String senderString = currentSec.getString("sender", "chat");
+            String senderString = currentSec.getString("sender", "chat").toLowerCase();
             switch (senderString)
             {
+                case "boss":
+                case "bossbar":
+                    sender = new BossBarSender(this,
+                            current,
+                            currentSec.getInt("bar.hold", 5),
+                            BarColor.valueOf(currentSec.getString("bar.color", "PURPLE").toUpperCase()),
+                            BarStyle.valueOf(currentSec.getString("bar.style", "SOLID").toUpperCase()));
+                    break;
                 case "chat":
                 default:
                     sender = new ChatMessageSender(this, current);

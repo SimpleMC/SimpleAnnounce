@@ -52,13 +52,8 @@ public class ChatMessageSender extends MessageSender
             // go through all players online
             server.getOnlinePlayers().stream().filter(player -> player != null).forEach(player ->
             {
-                // ensure player is neither missing any excludes
-                boolean skipPlayer =
-                        message.getPermissionIncludes().stream().anyMatch(perm -> !player.hasPermission(perm)) ||
-                                message.getPermissionExcludes().stream().anyMatch(player::hasPermission);
-
                 // send message if player has appropriate permissions
-                if (!skipPlayer)
+                if (!sendToPlayer(player))
                 {
                     logger.finest("Sending to " + player.getDisplayName());
                     player.sendMessage(message.getMessage());
