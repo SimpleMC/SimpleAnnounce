@@ -8,7 +8,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import org.simplemc.simpleannounce.message.Message;
-import org.simplemc.simpleannounce.message.RepeatingMessage;
 
 import java.util.Objects;
 
@@ -19,7 +18,9 @@ import java.util.Objects;
  */
 public class BossBarSender extends MessageSender
 {
-    private BossBar bossBar; // the boss bar
+    // boss bar config
+    private BarColor color; // color of the boss bar
+    private BarStyle style; // style of the boss bar
 
     private long holdTime; // amount of time message should stay on boss bar
     private boolean animate, // if the bar should animate or not(displaying remaining hold time)
@@ -41,19 +42,21 @@ public class BossBarSender extends MessageSender
         super(plugin, message);
 
         this.holdTime = holdTime * 20L;
+        this.color = color;
+        this.style = style;
         this.animate = animate;
         this.reverse = reverse;
-
-        // create boss bar
-        bossBar = Bukkit.createBossBar(message.getMessage(), color, style);
-
-        // set initial progress
-        bossBar.setProgress(reverse ? 1 : 0);
     }
 
     @Override
     public void run()
     {
+        // create boss bar
+        BossBar bossBar = Bukkit.createBossBar(message.getMessage(), color, style);
+
+        // set initial progress
+        bossBar.setProgress(reverse ? 1 : 0);
+
         // add all players that should receive the message to the boss bar
         Bukkit.getOnlinePlayers().stream()
                 .filter(Objects::nonNull)
@@ -77,14 +80,13 @@ public class BossBarSender extends MessageSender
         }
 
         // schedule boss bar to go away
-        Runnable hideBossBar = message instanceof RepeatingMessage ? bossBar::hide : bossBar::removeAll;
         Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () ->
         {
             // reset progress
             bossBar.setProgress(reverse ? 1 : 0);
 
-            // hide bar
-            hideBossBar.run();
+            // remove bar
+            bossBar.removeAll();
 
             // cancel animation task
             if (animationTask != null)

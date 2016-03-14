@@ -1,5 +1,6 @@
 package org.simplemc.simpleannounce;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -14,7 +15,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import org.simplemc.simpleannounce.message.Message;
-import org.simplemc.simpleannounce.message.RepeatingMessage;
+import org.simplemc.simpleannounce.message.MessageGroup;
 import org.simplemc.simpleannounce.message.sender.BossBarSender;
 import org.simplemc.simpleannounce.message.sender.ChatMessageSender;
 import org.simplemc.simpleannounce.message.sender.MessageSender;
@@ -108,17 +109,33 @@ public class SimpleAnnounce extends JavaPlugin
         // messages
         if (!getConfig().contains("messages"))
         {
-            getConfig().set("messages.default1.message", "This is an automatically generated repeating message!");
-            getConfig().set("messages.default1.delay", 15);
-            getConfig().set("messages.default1.repeat", 60);
-            getConfig().set("messages.default2.message", "This is another automatically generated repeating message for people with build permission!");
-            getConfig().set("messages.default2.delay", 30);
-            getConfig().set("messages.default2.repeat", 60);
-            List<String> df2Includes = new LinkedList<>();
-            df2Includes.add("permissions.build");
-            getConfig().set("messages.default2.includesperms", df2Includes);
-            getConfig().set("messages.default3.message", "This is an automatically generated one-time message!");
-            getConfig().set("messages.default3.delay", 45);
+            // example repeating message
+            getConfig().set("messages.repeating-example.message", "This is an automatically generated repeating message!");
+            getConfig().set("messages.repeating-example.delay", 15);
+            getConfig().set("messages.repeating-example.repeat", 60);
+
+            // example repeating message with perms
+            getConfig().set("messages.permissions-example.message", "This is another automatically generated repeating message for people with build permission!");
+            getConfig().set("messages.permissions-example.delay", 30);
+            getConfig().set("messages.permissions-example.repeat", 60);
+            getConfig().set("messages.permissions-example.includesperms", Arrays.asList(new String[]{"permissions.build"}));
+
+            // example one time message
+            getConfig().set("messages.one-time-example.message", "This is an automatically generated one-time message!");
+            getConfig().set("messages.one-time-example.delay", 45);
+
+            // example message group with boss bar sender
+            getConfig().set("messages.message-group-example.messages",
+                    Arrays.asList(new String[]
+                            {
+                                    "This is an automatically generated sequential message group (1 of 3)!",
+                                    "This is an automatically generated sequential message group (2 of 3)!",
+                                    "This is an automatically generated sequential message group (3 of 3)!"
+                            }));
+            getConfig().set("messages.message-group-example.delay", 30);
+            getConfig().set("messages.message-group-example.repeat", 30);
+            getConfig().set("messages.message-group-example.sender", "bossbar");
+            getConfig().set("messages.message-group-example.random-order", false);
             updated = true;
         }
 
@@ -138,7 +155,8 @@ public class SimpleAnnounce extends JavaPlugin
                     "-------------------------\n" +
                     "\n" +
                     "<message label>(String, must be unique):\n" +
-                    "    message(String, required): <Message to send>\n" +
+                    "    message(String, required) OR messages(String list, see sample config): <Message to send>\n" +
+                    "    random-order(boolean, optional): <if list of messages should be sent in random order>\n" +
                     "    sender(String, optional): <Message Sender(chat or boss, default: chat)>\n" +
                     "    bar(section, optional):\n" +
                     "        hold(int, optional): <Time in sections for bar to be displayed on announce>\n" +
@@ -179,10 +197,6 @@ public class SimpleAnnounce extends JavaPlugin
         ConfigurationSection currentSec; // current message config section
         Message current; // current message we're working with
         MessageSender sender; // message sender
-        String label; // unique message label
-        String message; // actual message text
-        int delay; // delay of message
-        int repeat; // repeat timer of message
 
         // go through all message nodes and get data from it
         for (String messageNode : nodes)
@@ -190,60 +204,109 @@ public class SimpleAnnounce extends JavaPlugin
             // set current section
             currentSec = section.getConfigurationSection(messageNode);
 
-            // get message info from nodes
-            label = messageNode;
-            message = ChatColor.translateAlternateColorCodes('&', currentSec.getString("message"));
-            delay = currentSec.getInt("delay", 0);
+            // load message
+            current = loadMessageBase(messageNode, currentSec); // message base info
+            loadMessagePerms(current, currentSec); // includes and excludes perms
+            sender = loadMessageSender(current, currentSec); // message sender
 
-            // repeating message
+            // and finally, add/queue the message the message
             if (currentSec.contains("repeat"))
             {
-                repeat = currentSec.getInt("repeat"); // repeat specific
-
-                // create repeating message
-                current = new RepeatingMessage(this, label, message, delay, repeat);
+                startRepeatingMessage(current, sender, currentSec.getInt("repeat"));
             }
             else
             {
-                // create message
-                current = new Message(this, label, message, delay);
+                startMessage(current, sender);
             }
-
-            // let's add permission includes for the message now
-            if (currentSec.contains("includesperms"))
-            {
-                current.addPermissionsIncl(currentSec.getStringList("includesperms"));
-            }
-
-            // let's add permission excludes for the message now
-            if (currentSec.contains("excludesperms"))
-            {
-                current.addPermissionsExcl(currentSec.getStringList("excludesperms"));
-            }
-
-            // get message sender
-            String senderString = currentSec.getString("sender", "chat").toLowerCase();
-            switch (senderString)
-            {
-                case "boss":
-                case "bossbar":
-                    sender = new BossBarSender(this,
-                            current,
-                            currentSec.getInt("bar.hold", 5),
-                            BarColor.valueOf(currentSec.getString("bar.color", "PURPLE").toUpperCase()),
-                            BarStyle.valueOf(currentSec.getString("bar.style", "SOLID").toUpperCase()),
-                            currentSec.getBoolean("bar.animate.enable", true),
-                            currentSec.getBoolean("bar.animate.reverse", false));
-                    break;
-                case "chat":
-                default:
-                    sender = new ChatMessageSender(this, current);
-                    break;
-            }
-
-            // and finally, add the message to our list
-            startMessage(current, sender);
         }
+    }
+
+    /**
+     * Load the base message information from a message configuration section
+     * <p>
+     * Loads message string(s), delay, and message group order(random or not)
+     * </p>
+     *
+     * @param label          message label
+     * @param messageSection configuration section to load message info from
+     *
+     * @return message loaded from config
+     */
+    private Message loadMessageBase(String label, ConfigurationSection messageSection)
+    {
+        Message message;
+        // get message info from nodes
+        int delay = messageSection.getInt("delay", 0);
+
+        // message group
+        if (messageSection.contains("messages"))
+        {
+            List<String> messages = messageSection.getStringList("messages");
+            boolean random = messageSection.getBoolean("random-order", false);
+            message = new MessageGroup(this, label, messages, delay, random);
+        }
+        // regular message
+        else
+        {
+            String messageString = ChatColor.translateAlternateColorCodes('&', messageSection.getString("message"));
+            message = new Message(this, label, messageString, delay);
+        }
+
+        return message;
+    }
+
+    /**
+     * Load permissions (includes and excludes) for a message from a message configuration section
+     *
+     * @param message        message to add permissions to
+     * @param messageSection configuration section to load permissions from
+     */
+    private void loadMessagePerms(Message message, ConfigurationSection messageSection)
+    {
+        // add permission includes for the message now
+        if (messageSection.contains("includesperms"))
+        {
+            message.addPermissionsIncl(messageSection.getStringList("includesperms"));
+        }
+
+        // add permission excludes for the message now
+        if (messageSection.contains("excludesperms"))
+        {
+            message.addPermissionsExcl(messageSection.getStringList("excludesperms"));
+        }
+    }
+
+    /**
+     * Load message sender for a message from a message configuration section
+     *
+     * @param message        message to load sender for
+     * @param messageSection configuration section to load message sender config from
+     */
+    private MessageSender loadMessageSender(Message message, ConfigurationSection messageSection)
+    {
+        MessageSender sender;
+
+        // get message sender
+        String senderString = messageSection.getString("sender", "chat").toLowerCase();
+        switch (senderString)
+        {
+            case "boss":
+            case "bossbar":
+                sender = new BossBarSender(this,
+                        message,
+                        messageSection.getInt("bar.hold", 5),
+                        BarColor.valueOf(messageSection.getString("bar.color", "PURPLE").toUpperCase()),
+                        BarStyle.valueOf(messageSection.getString("bar.style", "SOLID").toUpperCase()),
+                        messageSection.getBoolean("bar.animate.enable", true),
+                        messageSection.getBoolean("bar.animate.reverse", false));
+                break;
+            case "chat":
+            default:
+                sender = new ChatMessageSender(this, message);
+                break;
+        }
+
+        return sender;
     }
 
     /**
@@ -254,15 +317,18 @@ public class SimpleAnnounce extends JavaPlugin
      */
     private void startMessage(Message message, MessageSender messageSender)
     {
-        if (message instanceof RepeatingMessage)
-        {
-            getServer().getScheduler().runTaskTimer(
-                    this, messageSender, message.getDelay() * 20L, ((RepeatingMessage) message).getPeriod() * 20L);
-        }
-        else
-        {
-            getServer().getScheduler().runTaskLater(this, messageSender, message.getDelay() * 20L);
-        }
+        getServer().getScheduler().runTaskLater(this, messageSender, message.getDelay() * 20);
+    }
+
+    /**
+     * Kick off/schedule repeating messages
+     *
+     * @param message       message we are starting
+     * @param messageSender sender for the message
+     */
+    private void startRepeatingMessage(Message message, MessageSender messageSender, int period)
+    {
+        getServer().getScheduler().runTaskTimer(this, messageSender, message.getDelay() * 20, period * 20);
     }
 
     @Override

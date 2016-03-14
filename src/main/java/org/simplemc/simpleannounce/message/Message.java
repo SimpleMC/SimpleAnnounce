@@ -16,15 +16,17 @@ public class Message
 {
     private int delay; // delay in seconds for message
 
-    private Logger logger; // our logger
+    protected Logger logger; // our logger
     private String message, // message to send
             label; // unique message label
     private List<String> permissionIncludes, // permission nodes message receivers should include
             permissionExcludes; // permission nodes message receivers should exclude
 
     /**
-     * Create delayed message
+     * Create message
      *
+     * @param plugin  plugin instance
+     * @param label   message label from config
      * @param message message to send
      * @param delay   message's delay
      */
