@@ -64,15 +64,30 @@ public class BossBarSender extends MessageSender
                 .forEach(bossBar::addPlayer);
 
         // show the boss bar
-        bossBar.show();
+        bossBar.setVisible(true);
 
         // animate
         final BukkitTask animationTask;
         if (animate)
         {
             animationTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () ->
-                            bossBar.setProgress(bossBar.getProgress() + ((reverse ? -1 : 1) * (1.0 / holdTime)))
-                    , 0, 1L);
+            {
+                // calculate next progress bar step
+                double progress = bossBar.getProgress() + ((reverse ? -1 : 1) * (1.0 / holdTime));
+
+                // validate progress bar range
+                if (progress < 0)
+                {
+                    progress = 0;
+                }
+                else if (progress > 1)
+                {
+                    progress = 1;
+                }
+
+                // set progress
+                bossBar.setProgress(progress);
+            }, 0, 1L);
         }
         else
         {
