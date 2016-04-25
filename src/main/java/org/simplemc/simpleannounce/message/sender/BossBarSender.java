@@ -70,7 +70,7 @@ public class BossBarSender extends MessageSender
         final BukkitTask animationTask;
         if (animate)
         {
-            animationTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () ->
+            animationTask = Bukkit.getScheduler().runTaskTimer(plugin, () ->
             {
                 // calculate next progress bar step
                 double progress = bossBar.getProgress() + ((reverse ? -1 : 1) * (1.0 / holdTime));
@@ -95,7 +95,7 @@ public class BossBarSender extends MessageSender
         }
 
         // schedule boss bar to go away
-        Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () ->
+        Bukkit.getScheduler().runTaskLater(plugin, () ->
         {
             // reset progress
             bossBar.setProgress(reverse ? 1 : 0);
