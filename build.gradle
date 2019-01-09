@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'org.simplemc'
-version '1.9-SNAPSHOT'
+version '1.13-SNAPSHOT'
 
 // target Java 8
 sourceCompatibility = 1.8
@@ -22,5 +22,5 @@ repositories {
 }
 
 dependencies {
-    compile 'org.spigotmc:spigot-api:1.9-R0.1-SNAPSHOT'
+    compile 'org.spigotmc:spigot-api:1.13.2-R0.1-SNAPSHOT'
 }

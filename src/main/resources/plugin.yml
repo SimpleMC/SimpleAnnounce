@@ -1,6 +1,6 @@
 name: SimpleAnnounce
 main: org.simplemc.simpleannounce.SimpleAnnounce
-version: 1.9.3
+version: 1.13.0
 website: http://SimpleMC.org/simpleannounce/
 author: Taylor Becker
 permissions:
