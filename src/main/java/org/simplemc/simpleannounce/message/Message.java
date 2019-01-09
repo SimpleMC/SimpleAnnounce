@@ -16,7 +16,7 @@ public class Message
 {
     private int delay; // delay in seconds for message
 
-    protected Logger logger; // our logger
+    Logger logger; // our logger
     private String message, // message to send
             label; // unique message label
     private List<String> permissionIncludes, // permission nodes message receivers should include

@@ -15,10 +15,10 @@ import java.util.logging.Logger;
  */
 public abstract class MessageSender implements Runnable
 {
-    protected Plugin plugin; // plugin instance
-    protected Logger logger; // our logger
-    protected Server server; // server running the plugin
-    protected Message message; // the message to send
+    Plugin plugin; // plugin instance
+    Logger logger; // our logger
+    Server server; // server running the plugin
+    Message message; // the message to send
 
     /**
      * Init sender
@@ -26,7 +26,7 @@ public abstract class MessageSender implements Runnable
      * @param plugin  the plugin instance
      * @param message message to send
      */
-    public MessageSender(Plugin plugin, Message message)
+    MessageSender(Plugin plugin, Message message)
     {
         this.plugin = plugin;
         this.message = message;
@@ -45,7 +45,7 @@ public abstract class MessageSender implements Runnable
      *
      * @return if message should be sent to given player
      */
-    protected boolean sendToPlayer(Player player)
+    boolean sendToPlayer(Player player)
     {
         return !(message.getPermissionIncludes().stream().anyMatch(perm -> !player.hasPermission(perm)) ||
                 message.getPermissionExcludes().stream().anyMatch(player::hasPermission));

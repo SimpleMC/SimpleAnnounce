@@ -4,6 +4,8 @@ import org.bukkit.plugin.Plugin;
 
 import org.simplemc.simpleannounce.message.Message;
 
+import java.util.Objects;
+
 /**
  * Chat box Message sender
  *
@@ -23,8 +25,8 @@ public class ChatMessageSender extends MessageSender
     }
 
     @Override
-    /**
-     * Send the message!
+    /*
+      Send the message!
      */
     public void run()
     {
@@ -50,7 +52,7 @@ public class ChatMessageSender extends MessageSender
         else
         {
             // go through all players online
-            server.getOnlinePlayers().stream().filter(player -> player != null).forEach(player ->
+            server.getOnlinePlayers().stream().filter(Objects::nonNull).forEach(player ->
             {
                 // send message if player has appropriate permissions
                 if (!sendToPlayer(player))
