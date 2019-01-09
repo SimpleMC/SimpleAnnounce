@@ -1,6 +1,7 @@
 package org.simplemc.simpleannounce;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -117,7 +118,7 @@ public class SimpleAnnounce extends JavaPlugin
             getConfig().set("messages.permissions-example.message", "This is another automatically generated repeating message for people with build permission!");
             getConfig().set("messages.permissions-example.delay", 30);
             getConfig().set("messages.permissions-example.repeat", 60);
-            getConfig().set("messages.permissions-example.includesperms", Arrays.asList(new String[]{"permissions.build"}));
+            getConfig().set("messages.permissions-example.includesperms", Collections.singletonList("permissions.build"));
 
             // example one time message
             getConfig().set("messages.one-time-example.message", "This is an automatically generated one-time message!");
@@ -125,12 +126,12 @@ public class SimpleAnnounce extends JavaPlugin
 
             // example message group with boss bar sender
             getConfig().set("messages.message-group-example.messages",
-                    Arrays.asList(new String[]
-                            {
-                                    "This is an automatically generated sequential message group (1 of 3)!",
-                                    "This is an automatically generated sequential message group (2 of 3)!",
-                                    "This is an automatically generated sequential message group (3 of 3)!"
-                            }));
+                    Arrays.asList(
+                            "This is an automatically generated sequential message group (1 of 3)!",
+                            "This is an automatically generated sequential message group (2 of 3)!",
+                            "This is an automatically generated sequential message group (3 of 3)!"
+                    )
+            );
             getConfig().set("messages.message-group-example.delay", 30);
             getConfig().set("messages.message-group-example.repeat", 30);
             getConfig().set("messages.message-group-example.sender", "bossbar");
