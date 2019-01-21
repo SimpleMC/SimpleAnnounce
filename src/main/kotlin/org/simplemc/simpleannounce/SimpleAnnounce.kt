@@ -57,6 +57,7 @@ class SimpleAnnounce : JavaPlugin() {
         while (configVersionMigration()) { updated = true }
 
         if (updated) {
+            config.options().copyHeader(true)
             saveConfig()
             logger.info("${description.name} config updated, please check the settings!")
         }
@@ -79,7 +80,6 @@ class SimpleAnnounce : JavaPlugin() {
             // update root messages section to 'announcements'
             config["announcements"] = config.get("messages")
             config["messages"] = null
-            config.options().copyHeader(true)
             true
         }
     }
