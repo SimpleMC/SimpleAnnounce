@@ -1,7 +1,7 @@
 name: SimpleAnnounce
 main: org.simplemc.simpleannounce.SimpleAnnounce
 version: 1.13.0
-website: http://SimpleMC.org/simpleannounce/
+website: https://github.com/SimpleMC/SimpleAnnounce
 author: tajobe
 permissions:
     simpleannounce.reload:
