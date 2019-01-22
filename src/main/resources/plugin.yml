@@ -1,19 +1,18 @@
 name: SimpleAnnounce
 main: org.simplemc.simpleannounce.SimpleAnnounce
 version: 1.13.0
-website: http://SimpleMC.org/simpleannounce/
-author: Taylor Becker
+website: https://github.com/SimpleMC/SimpleAnnounce
+author: tajobe
 permissions:
-    simpleannounce:
-        description: Gives access to SimpleAnnounce help command
     simpleannounce.reload:
-        description: Gives access to SimpleAnnounce reload command
+        description: Allow reloading SimpleAnnounce config
         children:
             simpleannounce: true
 commands:
-    simpleannounce:
+    simpleannouncereload:
         description: SimpleAnnounce command for help or config reload
+        aliases:
+            - sareload
+            - sar
         usage: |
-            /<command> | Displays SimpleAnnounce help
-            /<command> r | Reloads SimpleAnnounce config
-            /<command> reload | Reloads SimpleAnnounce config
+            /<command> | Reloads SimpleAnnounce config
