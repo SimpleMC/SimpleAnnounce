@@ -2,12 +2,12 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.3.11"
+    kotlin("jvm") version "1.3.31"
     id("com.github.johnrengelman.shadow") version "4.0.3"
 }
 
 group = "org.simplemc"
-version = "1.13-SNAPSHOT"
+version = "1.14-SNAPSHOT"
 
 repositories {
     jcenter()
@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    compileOnly(group = "org.spigotmc", name = "spigot-api", version = "1.13+")
+    compileOnly(group = "org.spigotmc", name = "spigot-api", version = "1.14+")
 }
 
 tasks {

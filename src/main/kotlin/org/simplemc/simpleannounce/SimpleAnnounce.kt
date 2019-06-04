@@ -42,12 +42,13 @@ class SimpleAnnounce : JavaPlugin() {
             logger.fine("Will reload config in $reloadTime minutes")
         }
 
-        config.getConfigurationSection("announcements").getKeys(false)
-            .map { config.getConfigurationSection("announcements.$it") }
-            .forEach {
-                logger.fine("Loading announcement '${it.name}'")
-                loadAnnouncementSender(loadAnnouncement(it), it)
-            }
+        config.getConfigurationSection("announcements")?.getKeys(false)?.let { keys ->
+            keys.mapNotNull { config.getConfigurationSection("announcements.$it") }
+                .forEach {
+                    logger.fine("Loading announcement '${it.name}'")
+                    loadAnnouncementSender(loadAnnouncement(it), it)
+                }
+        }
     }
 
     private fun updateConfig() {
@@ -70,7 +71,7 @@ class SimpleAnnounce : JavaPlugin() {
             config["config-version"] = 1
 
             // update each announcement's config
-            config.getConfigurationSection("messages").getKeys(false).forEach { label ->
+            config.getConfigurationSection("messages")?.getKeys(false)?.forEach { label ->
                 // update single `message` values to a list of one message
                 config["messages.$label.message", null]?.let {
                     config["messages.$label.messages"] = listOf(it)
@@ -101,8 +102,8 @@ class SimpleAnnounce : JavaPlugin() {
                 plugin = this,
                 announcement = announcement,
                 holdTime = announcementConfig.getInt("bar.hold", 5),
-                color = BarColor.valueOf(announcementConfig.getString("bar.color", "PURPLE").toUpperCase()),
-                style = BarStyle.valueOf(announcementConfig.getString("bar.style", "SOLID").toUpperCase()),
+                color = BarColor.valueOf(checkNotNull(announcementConfig.getString("bar.color", "PURPLE")).toUpperCase()),
+                style = BarStyle.valueOf(checkNotNull(announcementConfig.getString("bar.style", "SOLID")).toUpperCase()),
                 animate = announcementConfig.getBoolean("bar.animate.enable", true),
                 reverse = announcementConfig.getBoolean("bar.animate.reverse", false)
             )
