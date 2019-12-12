@@ -1,6 +1,7 @@
 name: SimpleAnnounce
 main: org.simplemc.simpleannounce.SimpleAnnounce
-version: 1.13.0
+version: 1.15.0
+api-version: "1.15"
 website: https://github.com/SimpleMC/SimpleAnnounce
 author: tajobe
 permissions:
