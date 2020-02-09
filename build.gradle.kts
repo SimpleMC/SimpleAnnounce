@@ -1,5 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import pl.allegro.tech.build.axion.release.domain.hooks.HookContext
 import pl.allegro.tech.build.axion.release.domain.hooks.HooksConfig
 import java.time.OffsetDateTime
@@ -101,13 +99,13 @@ tasks {
         distributionType = Wrapper.DistributionType.ALL
     }
 
-    withType<KotlinCompile> {
+    compileKotlin {
         kotlinOptions {
             jvmTarget = "1.8"
         }
     }
 
-    withType<ShadowJar> {
+    shadowJar {
         minimize()
     }
 
