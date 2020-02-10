@@ -1,3 +1,4 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import pl.allegro.tech.build.axion.release.domain.hooks.HookContext
 import pl.allegro.tech.build.axion.release.domain.hooks.HooksConfig
 import java.time.OffsetDateTime
@@ -105,11 +106,23 @@ tasks {
         }
     }
 
+    // standard jar should be ready to go with all dependencies
     shadowJar {
         minimize()
+        archiveClassifier.set("")
+    }
+
+    // nokt jar without the kotlin runtime
+    register<ShadowJar>("nokt") {
+        minimize()
+        archiveClassifier.set("nokt")
+
+        dependencies {
+            exclude("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+        }
     }
 
     build {
-        dependsOn(":shadowJar")
+        dependsOn(":shadowJar", ":nokt")
     }
 }
