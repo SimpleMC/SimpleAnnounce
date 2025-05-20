@@ -61,6 +61,7 @@ kotlin {
 
 dependencies {
     compileOnly(libs.spigot)
+    implementation(libs.kotlinLogger)
 }
 
 tasks {
@@ -69,10 +70,17 @@ tasks {
     }
 
     processResources {
+        // inject runtime libraries into online plugin variant
+        val libraries = configurations.runtimeClasspath.get().resolvedConfiguration.resolvedArtifacts
+            .joinToString("\n  - ", prefix = "\n  - ") { artifact ->
+                val id = artifact.moduleVersion.id
+                "${id.group}:${id.name}:${id.version}"
+            }
+
         val placeholders = mapOf(
             "version" to version,
             "apiVersion" to libs.versions.mcApi.get(),
-            "kotlinVersion" to libs.versions.kotlin.get(),
+            "libraries" to libraries,
         )
 
         filesMatching("plugin.yml") {

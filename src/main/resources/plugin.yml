@@ -17,5 +17,4 @@ commands:
             - sar
         usage: |
             /<command> | Reloads SimpleAnnounce config
-libraries:
-  - org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}
+libraries: ${libraries}
