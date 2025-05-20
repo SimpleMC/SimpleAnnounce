@@ -1,0 +1,42 @@
+name: Create Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      versionIncrementer:
+        type: choice
+        description: Override the default version incrementer according to https://axion-release-plugin.readthedocs.io/en/latest/configuration/version/#incrementing
+        default: default
+        options:
+          - default
+          - incrementPatch
+          - incrementMinor
+          - incrementMajor
+          - incrementPrerelease
+
+jobs:
+  release:
+    name: Gradle Release
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ssh-key: "${{ secrets.COMMIT_KEY }}"
+          fetch-depth: 0
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.COMMIT_KEY }}
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Gradle Release
+        if: ${{ inputs.versionIncrementer == 'default' }}
+        run: ./gradlew release
+      - name: Gradle Release w/ Increment Override
+        if: ${{ inputs.versionIncrementer != 'default' }}
+        run: ./gradlew release -Prelease.versionIncrementer=${{ inputs.versionIncrementer }}

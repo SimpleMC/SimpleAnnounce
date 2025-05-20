@@ -1,14 +1,14 @@
 # Config nodes:
-# 
+#
 # auto-reloadconfig(int): <Time in minutes to check/reload config for message updates(0 for off)>
 #     NOTE: When config is reloaded, will reset delays for messages and cause one-time messages to resend
 # debug-mode(boolean): <Should we pring debug to server.log(true/false)?>
 #     NOTE: Look for fine and finer level log messages in server.log
 # announcements: Add announcements below to this section, see below
-# 
+#
 # Announcement config overview:
 # -------------------------
-# 
+#
 # <message label>(String, must be unique):
 #     message(String, required) OR messages(String list, see sample config): <Message to send>
 #     random-order(boolean, optional): <if list of messages should be sent in random order>
@@ -28,7 +28,7 @@
 #     excludesperms(String list, optional):
 #     - <don't send to those with this perm>
 #     - <and this one>
-# 
+#
 # -------------------------
 #
 #  Note: For permissions, includes are applied first, then excludes are taken out
