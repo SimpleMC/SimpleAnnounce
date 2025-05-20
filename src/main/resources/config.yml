@@ -4,30 +4,26 @@
 #     NOTE: When config is reloaded, will reset delays for messages and cause one-time messages to resend
 # debug-mode(boolean): <Should we pring debug to server.log(true/false)?>
 #     NOTE: Look for fine and finer level log messages in server.log
-# announcements: Add announcements below to this section, see below
-#
-# Announcement config overview:
-# -------------------------
-#
-# <message label>(String, must be unique):
-#     message(String, required) OR messages(String list, see sample config): <Message to send>
-#     random-order(boolean, optional): <if list of messages should be sent in random order>
-#     sender(String, optional): <Message Sender(chat or boss, default: chat)>
-#     bar(section, optional):
-#         hold(int, optional): <Time in sections for bar to be displayed on announce>
-#         color(String, optional): <bar color(https://hub.spigotmc.org/javadocs/spigot/org/bukkit/boss/BarColor.html)>
-#         style(String, optional): <bar style(https://hub.spigotmc.org/javadocs/spigot/org/bukkit/boss/BarStyle.html)>
-#         animate(section, optional):
-#             enable(boolean, optional): <if bar should animate hold time>
-#             reverse(boolean, optional): <if animation should be reversed>
-#     delay(int, optional - default 0): <Delay to send message on in seconds>
-#     repeat(int, optional): <time between repeat sendings of the message in seconds>
-#     includesperms(String list, optional):
-#     - <only send to those with this perm>
-#     - <and this one>
-#     excludesperms(String list, optional):
-#     - <don't send to those with this perm>
-#     - <and this one>
+# announcements: Add announcements below to this section
+#     <message label>(String, must be unique):
+#         message(String, required) OR messages(String list, see sample config): <Message to send>
+#         random-order(boolean, optional): <if list of messages should be sent in random order>
+#         sender(String, optional): <Message Sender(chat or boss, default: chat)>
+#         bar(section, optional):
+#             hold(int, optional): <Time in sections for bar to be displayed on announce>
+#             color(String, optional): <bar color(https://hub.spigotmc.org/javadocs/spigot/org/bukkit/boss/BarColor.html)>
+#             style(String, optional): <bar style(https://hub.spigotmc.org/javadocs/spigot/org/bukkit/boss/BarStyle.html)>
+#             animate(section, optional):
+#                 enable(boolean, optional): <if bar should animate hold time>
+#                 reverse(boolean, optional): <if animation should be reversed>
+#         delay(int, optional - default 0): <Delay to send message on in seconds>
+#         repeat(int, optional): <time between repeat sendings of the message in seconds>
+#         includesperms(String list, optional):
+#         - <only send to those with this perm>
+#         - <and this one>
+#         excludesperms(String list, optional):
+#         - <don't send to those with this perm>
+#         - <and this one>
 #
 # -------------------------
 #
