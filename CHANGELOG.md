@@ -1,6 +1,14 @@
 # Changelog
 
 ## [Unreleased]
+### Added
+- MIT license
+
+### Changed
+- MC 1.21, Java 21, Kotlin 2.1
+
+### Fixed
+- Config Auto-reload is now a repeating task as intended
 
 ## [1.0.0] - 2020-02-10
 ### Added
