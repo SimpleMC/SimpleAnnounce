@@ -1,6 +1,7 @@
 [versions]
 axionRelease = "1.18.18"
-kotlin = "2.1.20"
+kotlin = "2.1.21"
+kotlinLogger = "7.0.7"
 ktlintGradle = "12.2.0"
 mcApi = "1.21"
 shadow = "8.3.6"
@@ -13,4 +14,5 @@ ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintGradle"}
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow"}
 
 [libraries]
+kotlinLogger = { group = "io.github.oshai", name = "kotlin-logging", version.ref = "kotlinLogger" }
 spigot = { group = "org.spigotmc", name = "spigot-api", version.ref = "spigot" }

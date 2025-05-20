@@ -15,6 +15,7 @@ commands:
         aliases:
             - sareload
             - sar
+        permission: simpleannounce.reload
         usage: |
             /<command> | Reloads SimpleAnnounce config
 libraries: ${libraries}

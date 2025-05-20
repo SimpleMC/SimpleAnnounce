@@ -15,7 +15,8 @@ import java.util.logging.Level
 class SimpleAnnounce : JavaPlugin() {
     override fun onEnable() {
         loadConfig()
-        logger.info("${description.name} version ${description.version} enabled!")
+        checkNotNull(getCommand("simpleannouncereload")).setExecutor(::reloadCommand)
+        logger.info { "${description.name} version ${description.version} enabled!" }
     }
 
     private fun reload() {
@@ -35,17 +36,18 @@ class SimpleAnnounce : JavaPlugin() {
         }
 
         // load auto-reload + create task to check again if necessary
-        val reloadTime = config.getInt("auto-reloadconfig", 0)
-        if (reloadTime != 0) {
-            server.scheduler.runTaskLaterAsynchronously(this, ::reload, reloadTime.toLong() * 60 * 20L)
+        val reloadTime = config.getLong("auto-reloadconfig", 0L)
+        if (reloadTime > 0L) {
+            val reloadTicks = reloadTime * 60 * 20
+            server.scheduler.runTaskTimerAsynchronously(this, ::reload, reloadTicks, reloadTicks)
 
-            logger.fine("Will reload config in $reloadTime minutes")
+            logger.fine { "Will reload config every $reloadTime minutes" }
         }
 
         config.getConfigurationSection("announcements")?.getKeys(false)?.let { keys ->
             keys.mapNotNull { config.getConfigurationSection("announcements.$it") }
                 .forEach {
-                    logger.fine("Loading announcement '${it.name}'")
+                    logger.fine { "Loading announcement '${it.name}'" }
                     loadAnnouncementSender(loadAnnouncement(it), it)
                 }
         }
@@ -55,12 +57,14 @@ class SimpleAnnounce : JavaPlugin() {
         var updated = false
 
         // migrate each config version until we're at the latest (no more updates)
-        while (configVersionMigration()) { updated = true }
+        while (configVersionMigration()) {
+            updated = true
+        }
 
         if (updated) {
-            config.options().copyHeader(true)
+            config.options().parseComments(true)
             saveConfig()
-            logger.info("${description.name} config updated, please check the settings!")
+            logger.info { "${description.name} config updated, please check the settings!" }
         }
     }
 
@@ -86,14 +90,13 @@ class SimpleAnnounce : JavaPlugin() {
     }
 
     private fun loadAnnouncement(announcementConfig: ConfigurationSection) = Announcement(
-        plugin = this,
         label = announcementConfig.name,
         messages = announcementConfig.getStringList("messages").map { ChatColor.translateAlternateColorCodes('&', it) },
         permissionIncludes = announcementConfig.getStringListOrEmpty("includesperms"),
         permissionExcludes = announcementConfig.getStringListOrEmpty("excludesperms"),
         delay = announcementConfig.getInt("delay", 0),
         period = if (announcementConfig.isSet("repeat")) announcementConfig.getInt("repeat") else null,
-        random = announcementConfig.getBoolean("random", false)
+        random = announcementConfig.getBoolean("random", false),
     )
 
     private fun loadAnnouncementSender(announcement: Announcement, announcementConfig: ConfigurationSection) =
@@ -102,11 +105,12 @@ class SimpleAnnounce : JavaPlugin() {
                 plugin = this,
                 announcement = announcement,
                 holdTime = announcementConfig.getInt("bar.hold", 5),
-                color = BarColor.valueOf(checkNotNull(announcementConfig.getString("bar.color", "PURPLE")).toUpperCase()),
-                style = BarStyle.valueOf(checkNotNull(announcementConfig.getString("bar.style", "SOLID")).toUpperCase()),
+                color = BarColor.valueOf(checkNotNull(announcementConfig.getString("bar.color", "PURPLE")).uppercase()),
+                style = BarStyle.valueOf(checkNotNull(announcementConfig.getString("bar.style", "SOLID")).uppercase()),
                 animate = announcementConfig.getBoolean("bar.animate.enable", true),
-                reverse = announcementConfig.getBoolean("bar.animate.reverse", false)
+                reverse = announcementConfig.getBoolean("bar.animate.reverse", false),
             )
+
             "chat" -> ChatSender(this, announcement)
             else ->
                 throw IllegalArgumentException("Invalid message sender configured on message '${announcement.label}'!")
@@ -114,24 +118,15 @@ class SimpleAnnounce : JavaPlugin() {
 
     override fun onDisable() {
         server.scheduler.cancelTasks(this)
-        logger.info("${description.name} disabled.")
+        logger.info { "${description.name} disabled." }
     }
 
-    override fun onCommand(
-        sender: CommandSender,
-        command: Command,
-        label: String,
-        vararg args: String
-    ): Boolean {
-        if (sender.hasPermission("simpleannounce.reload")) {
-            reloadConfig()
-            loadConfig()
+    private fun reloadCommand(sender: CommandSender, command: Command, label: String, vararg args: String): Boolean {
+        reloadConfig()
+        loadConfig()
 
-            logger.fine("Config reloaded")
-            sender.sendMessage("SimpleAnnounce config reloaded.")
-        } else {
-            sender.sendMessage("${ChatColor.RED}You do not have permission to do that!")
-        }
+        logger.fine { "Config reloaded" }
+        sender.sendMessage("SimpleAnnounce config reloaded.")
 
         return true
     }

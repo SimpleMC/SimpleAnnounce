@@ -15,10 +15,10 @@ class BossBarSender(
     private val color: BarColor,
     private val style: BarStyle,
     private val animate: Boolean,
-    private val reverse: Boolean
+    private val reverse: Boolean,
 ) : AnnouncementSender(plugin, announcement) {
 
-    private val holdTime = holdTime * 20L // convert from seconds to ticks
+    private val holdTicks = holdTime * 20L // convert from seconds to ticks
 
     override fun run() {
         // create the bar
@@ -32,14 +32,16 @@ class BossBarSender(
         // set up animation
         val animation = if (animate) {
             Bukkit.getScheduler().runTaskTimer(plugin, updateBarProgress(bar), 0, 1L)
-        } else null
+        } else {
+            null
+        }
 
         // schedule removal
-        Bukkit.getScheduler().runTaskLater(plugin, removeBar(bar, animation), holdTime)
+        Bukkit.getScheduler().runTaskLater(plugin, removeBar(bar, animation), holdTicks)
     }
 
     private fun updateBarProgress(bar: BossBar): () -> Unit = {
-        bar.progress = Math.max(0.0, Math.min(1.0, bar.progress + (if (reverse) -1 else 1) * (1.0 / holdTime)))
+        bar.progress = bar.progress + (if (reverse) -1 else 1) * (1.0 / holdTicks).coerceIn(0.0, 1.0)
     }
 
     private fun removeBar(bar: BossBar, animation: BukkitTask?): () -> Unit = {
