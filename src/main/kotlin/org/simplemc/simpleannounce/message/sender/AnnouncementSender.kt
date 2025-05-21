@@ -6,7 +6,7 @@ import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
 import org.simplemc.simpleannounce.message.Announcement
 
-private val logger = KotlinLogging.logger {}
+private val logger = KotlinLogging.logger("SimpleAnnounce AnnouncementSender")
 
 abstract class AnnouncementSender(internal val plugin: Plugin, internal val announcement: Announcement) : Runnable {
     init {
