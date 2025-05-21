@@ -1,6 +1,8 @@
 package org.simplemc.simpleannounce
 
 import org.bukkit.configuration.ConfigurationSection
+import org.bukkit.configuration.file.FileConfigurationOptions
+import org.bukkit.configuration.file.YamlConfiguration
 
 fun String.oneOf(ignoreCase: Boolean, vararg values: String): Boolean =
     values.any { it.equals(this, ignoreCase = ignoreCase) }
@@ -17,4 +19,14 @@ fun ConfigurationSection.getStringListOrEmpty(path: String) = if (isSet(path)) {
     getStringList(path)
 } else {
     emptyList()
+}
+
+/**
+ * Set config header from a default `config.yml` resource' header
+ */
+fun FileConfigurationOptions.copyDefaultHeader(): FileConfigurationOptions {
+    val defaultHeader = YamlConfiguration.loadConfiguration(
+        checkNotNull(object {}.javaClass.classLoader.getResourceAsStream("config.yml")).reader(),
+    ).options().header
+    return setHeader(defaultHeader)
 }

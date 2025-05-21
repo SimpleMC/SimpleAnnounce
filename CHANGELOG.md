@@ -1,6 +1,16 @@
 # Changelog
 
 ## [Unreleased]
+### Added
+- MIT license
+
+### Changed
+- MC 1.21, Java 21, Kotlin 2.1
+
+### Fixed
+- Config Auto-reload is now a repeating task as intended
+- Config actually created on first run
+- Copy updated default header when config is updated
 
 ## [1.0.0] - 2020-02-10
 ### Added

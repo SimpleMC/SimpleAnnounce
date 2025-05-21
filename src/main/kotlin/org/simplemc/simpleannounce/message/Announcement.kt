@@ -1,25 +1,25 @@
 package org.simplemc.simpleannounce.message
 
-import org.bukkit.plugin.Plugin
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
 
+private val logger = KotlinLogging.logger("SimpleAnnounce Announcement")
+
 data class Announcement(
-    private val plugin: Plugin,
     internal val label: String,
     private val messages: List<String>,
     internal val permissionIncludes: List<String>,
     internal val permissionExcludes: List<String>,
     internal val delay: Int,
     internal val period: Int?,
-    private val random: Boolean
+    private val random: Boolean,
 ) {
     private val current = AtomicInteger()
-    internal val isBroadcast = permissionIncludes.isEmpty() && permissionExcludes.isEmpty()
 
     init {
         messages.ifEmpty { throw IllegalArgumentException("Cannot create an announcement with no messages!") }
-        plugin.logger.info("Announcement '$label' created with ${messages.size} messages.")
+        logger.trace { "Announcement '$label' created with ${messages.size} messages." }
     }
 
     fun getMessage() = when {

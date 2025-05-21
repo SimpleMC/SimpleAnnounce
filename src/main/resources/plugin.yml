@@ -1,7 +1,7 @@
 name: SimpleAnnounce
 main: org.simplemc.simpleannounce.SimpleAnnounce
-version: 1.0.0
-api-version: "1.15"
+version: "${version}"
+api-version: "${apiVersion}"
 website: https://github.com/SimpleMC/SimpleAnnounce
 author: tajobe
 permissions:
@@ -15,5 +15,7 @@ commands:
         aliases:
             - sareload
             - sar
+        permission: simpleannounce.reload
         usage: |
             /<command> | Reloads SimpleAnnounce config
+libraries: ${libraries}
