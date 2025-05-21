@@ -41,7 +41,7 @@ class BossBarSender(
     }
 
     private fun updateBarProgress(bar: BossBar): () -> Unit = {
-        bar.progress = bar.progress + (if (reverse) -1 else 1) * (1.0 / holdTicks).coerceIn(0.0, 1.0)
+        bar.progress = (bar.progress + (if (reverse) -1 else 1) * (1.0 / holdTicks)).coerceIn(0.0, 1.0)
     }
 
     private fun removeBar(bar: BossBar, animation: BukkitTask?): () -> Unit = {
