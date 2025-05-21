@@ -14,6 +14,7 @@ import java.util.logging.Level
 
 class SimpleAnnounce : JavaPlugin() {
     override fun onEnable() {
+        saveDefaultConfig()
         loadConfig()
         checkNotNull(getCommand("simpleannouncereload")).setExecutor(::reloadCommand)
         logger.info { "${description.name} version ${description.version} enabled!" }
@@ -62,7 +63,7 @@ class SimpleAnnounce : JavaPlugin() {
         }
 
         if (updated) {
-            config.options().parseComments(true)
+            config.options().copyDefaultHeader()
             saveConfig()
             logger.info { "${description.name} config updated, please check the settings!" }
         }
@@ -71,20 +72,9 @@ class SimpleAnnounce : JavaPlugin() {
     private fun configVersionMigration() = when (config["config-version", 0]) {
         1 -> false // this is the current version
         else -> {
-            // invalid or no config version set, set it
+            // invalid or no config version set, bring in defaults
+            config.options().copyDefaults(true)
             config["config-version"] = 1
-
-            // update each announcement's config
-            config.getConfigurationSection("messages")?.getKeys(false)?.forEach { label ->
-                // update single `message` values to a list of one message
-                config["messages.$label.message", null]?.let {
-                    config["messages.$label.messages"] = listOf(it)
-                }
-            }
-
-            // update root messages section to 'announcements'
-            config["announcements"] = config.get("messages")
-            config["messages"] = null
             true
         }
     }
