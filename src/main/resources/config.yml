@@ -2,7 +2,7 @@
 #
 # auto-reloadconfig(int): <Time in minutes to check/reload config for message updates(0 for off)>
 #     NOTE: When config is reloaded, will reset delays for messages and cause one-time messages to resend
-# debug-mode(boolean): <Should we pring debug to server.log(true/false)?>
+# debug-mode(boolean): <Should we print debug to server.log(true/false)?>
 #     NOTE: Look for fine and finer level log messages in server.log
 # announcements: Add announcements below to this section
 #     <message label>(String, must be unique):
@@ -29,32 +29,49 @@
 #
 #  Note: For permissions, includes are applied first, then excludes are taken out
 
-config-version: 1
-auto-reloadconfig: 20
-debug-mode: false
+autoReload: 10m
+debugMode: false
 announcements:
-  repeating-example:
+  - type: Chat
+    delay: 30s
+    repeat: 2m
+    includesPermissions:
+      - permissions.build
+      - another.permission
+    excludesPermissions:
+      - permissions.admin
     messages:
-      - This is an automatically generated repeating message!
-    delay: 15
-    repeat: 60
-  permissions-example:
+      - hello
+      - world
+  - type: Chat
+    repeat: 1m 40s
     messages:
-      - This is another automatically generated repeating message for people with build permission!
-    delay: 30
-    repeat: 60
-    includesperms:
-    - permissions.build
-  one-time-example:
+      - abc
+      - xyz
+  - type: Title
+    repeat: 30s
     messages:
-      - This is an automatically generated one-time message!
-    delay: 45
-  message-group-example:
+      - title: Title!
+        subtitle: Subtitle!
+      - title: Title only custom durations
+        fadeIn: 100ms
+        stay: 10s
+        fadeOut: 1s
+    fadeIn: 500ms
+    stay: 5s
+    fadeOut: 500ms
+  - type: Boss
+    random: true
+    repeat: 15s
     messages:
-      - This is an automatically generated sequential message group (1 of 3)!
-      - This is an automatically generated sequential message group (2 of 3)!
-      - This is an automatically generated sequential message group (3 of 3)!
-    delay: 30
-    repeat: 30
-    sender: bossbar
-    random-order: false
+      - message: eyy
+      - message: custom bar config
+        hold: 10s
+        color: GREEN
+        style: SEGMENTED_20
+        reverseAnimation: true
+    hold: 5s
+    color: PURPLE
+    style: SOLID
+    animate: true
+config-version: 1

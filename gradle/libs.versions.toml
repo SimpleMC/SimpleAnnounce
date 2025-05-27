@@ -1,7 +1,9 @@
 [versions]
 axionRelease = "1.18.18"
+jackson = "2.19.0"
 kotlin = "2.1.21"
 kotlinLogger = "7.0.7"
+kotlinRelocate = "2.0.0"
 ktlintGradle = "12.2.0"
 mcApi = "1.21"
 shadow = "8.3.6"
@@ -10,9 +12,12 @@ spigot = "1.21.+"
 [plugins]
 axionRelease = { id = "pl.allegro.tech.build.axion-release", version.ref = "axionRelease"}
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin"}
+kotlinRelocate = { id = "com.xpdustry.kotlin-shadow-relocator", version.ref = "kotlinRelocate" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintGradle"}
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow"}
 
 [libraries]
+jacksonKotlin = { group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version.ref = "jackson" }
+jacksonDataformatYaml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version.ref = "jackson" }
 kotlinLogger = { group = "io.github.oshai", name = "kotlin-logging", version.ref = "kotlinLogger" }
 spigot = { group = "org.spigotmc", name = "spigot-api", version.ref = "spigot" }

@@ -3,6 +3,7 @@ package org.simplemc.simpleannounce
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.FileConfigurationOptions
 import org.bukkit.configuration.file.YamlConfiguration
+import kotlin.time.Duration
 
 fun String.oneOf(ignoreCase: Boolean, vararg values: String): Boolean =
     values.any { it.equals(this, ignoreCase = ignoreCase) }
@@ -10,6 +11,8 @@ fun String.oneOf(ignoreCase: Boolean, vararg values: String): Boolean =
 fun String.oneOf(vararg values: String): Boolean = oneOf(false, *values)
 
 fun String.oneOfIgnoreCase(vararg values: String): Boolean = oneOf(true, *values)
+
+val Duration.inTicks: Long get() = this.inWholeMilliseconds / 50
 
 /**
  * Get a string list if and only if it exists in the config (ignoring defaults).
