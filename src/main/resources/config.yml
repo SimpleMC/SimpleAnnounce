@@ -31,8 +31,8 @@
 # Boss type:
 #
 # hold(duration): <Time for boss bar to be on screen>
-# color<BarColor>: <Color of bar, one of PINK, BLUE, RED, GREEN, YELLOW, PURPLE, WHITE>
-# style<BarStyle>: <Style of bar, one of SOLID, SEGMENTED_6, SEGMENTED_10, SEGMENTED_12, SEGMENTED_20>
+# color(BarColor): <Color of bar, one of PINK, BLUE, RED, GREEN, YELLOW, PURPLE, WHITE>
+# style(BarStyle): <Style of bar, one of SOLID, SEGMENTED_6, SEGMENTED_10, SEGMENTED_12, SEGMENTED_20>
 # animate(boolean): <if bar should animate over hold time>
 # reverseAnimation(boolean): <if animation should be reversed>
 # messages(BossBarMessage list):
@@ -44,7 +44,7 @@
 # fadeIn(duration): <Time it takes for title to fade in>
 # stay(duration): <Time for title to stay on screen>
 # fadeOut(duration): <Time it takes for title to fade out>
-# messages(BossBarMessage list):
+# messages(TitleMessage list):
 # - title(string): <title string>
 #   subtitle(string): <subtitle string, appears below title slightly smaller>
 #   <title config overrides eg fadeIn, stay, fadeOut...see above>

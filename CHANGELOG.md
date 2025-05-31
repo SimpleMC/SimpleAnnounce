@@ -2,15 +2,21 @@
 
 ## [Unreleased]
 ### Added
+- GH-3: Title type announcement sender (@tajobe)
 - MIT license
 
 ### Changed
 - MC 1.21, Java 21, Kotlin 2.1
+- **BREAKING**: New config format
 
 ### Fixed
 - Config Auto-reload is now a repeating task as intended
 - Config actually created on first run
 - Copy updated default header when config is updated
+
+### Removed
+- Offline variant is now the default jar, no longer producing an "online" version
+- debugMode option: log levels are controlled by the server's log4j configuration
 
 ## [1.0.0] - 2020-02-10
 ### Added
