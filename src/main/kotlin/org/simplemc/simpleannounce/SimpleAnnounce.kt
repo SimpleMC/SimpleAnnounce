@@ -17,7 +17,6 @@ import org.simplemc.simpleannounce.sender.BossBarSender
 import org.simplemc.simpleannounce.sender.ChatSender
 import org.simplemc.simpleannounce.sender.TitleSender
 import java.io.File
-import java.util.logging.Level
 import kotlin.time.Duration
 
 class SimpleAnnounce : JavaPlugin() {
@@ -26,17 +25,17 @@ class SimpleAnnounce : JavaPlugin() {
         private const val CONFIG_VERSION_KEY = "config-version"
         private const val CURRENT_CONFIG_VERSION = 1
         private const val RELOAD_COMMAND = "simpleannouncereload"
+
+        private val durationModule = SimpleModule()
+            .addDeserializer(Duration::class.java, DurationDeserializer())
+            .addSerializer(DurationSerializer())
     }
 
     private val objectMapper: ObjectMapper = YAMLMapper.builder()
         .disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID)
         .build()
         .registerKotlinModule()
-        .registerModule(
-            SimpleModule()
-                .addDeserializer(Duration::class.java, DurationDeserializer())
-                .addSerializer(DurationSerializer()),
-        )
+        .registerModule(durationModule)
         .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 
@@ -57,11 +56,6 @@ class SimpleAnnounce : JavaPlugin() {
         migrateConfigToLatest()
 
         val announcementConfig = objectMapper.readValue<SimpleAnnounceConfig>(File(dataFolder, CONFIG_FILE_NAME))
-
-        // load debug mode
-        if (announcementConfig.debugMode) {
-            logger.level = Level.FINER
-        }
 
         // load auto-reload + create task to check again if necessary
         if (announcementConfig.autoReload?.isPositive() == true) {

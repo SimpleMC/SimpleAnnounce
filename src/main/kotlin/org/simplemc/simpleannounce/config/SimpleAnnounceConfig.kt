@@ -13,7 +13,6 @@ import kotlin.time.Duration.Companion.seconds
 
 data class SimpleAnnounceConfig(
     val autoReload: Duration? = null,
-    val debugMode: Boolean = false,
     val announcements: List<AnnouncementConfig<*>>,
 ) {
     companion object {

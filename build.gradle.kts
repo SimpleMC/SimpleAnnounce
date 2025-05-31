@@ -1,5 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.jetbrains.kotlin.gradle.utils.extendsFrom
 import org.yaml.snakeyaml.DumperOptions
 import org.yaml.snakeyaml.Yaml
 import pl.allegro.tech.build.axion.release.domain.hooks.HookContext
@@ -61,14 +59,15 @@ kotlin {
     jvmToolchain(21)
 }
 
-val provideImplementation by configurations.creating {}
-configurations.implementation.extendsFrom(configurations.named("provideImplementation"))
+val shadowJarOnly: Boolean = project.property("shadowJarOnly")?.toString()?.toBoolean() ?: false
+val runtimeClasspath by configurations.runtimeClasspath
 
 dependencies {
     compileOnly(libs.spigot)
     implementation(libs.kotlinLogger)
-    provideImplementation(libs.jacksonKotlin)
-    provideImplementation(libs.jacksonDataformatYaml)
+    implementation(libs.jacksonKotlin)
+    implementation(libs.jacksonDataformatYaml)
+    implementation(kotlin("stdlib"))
 
     testImplementation(libs.spigot)
 }
@@ -79,9 +78,10 @@ tasks {
     }
 
     processResources {
+        inputs.property("shadowJarOnly", shadowJarOnly)
+
         // inject "online" libraries into online plugin variant
-        val libraries = project.configurations.runtimeClasspath.get().resolvedConfiguration.resolvedArtifacts
-            .minus(provideImplementation.resolvedConfiguration.resolvedArtifacts)
+        val libraries = runtimeClasspath.resolvedConfiguration.resolvedArtifacts
             .joinToString("\n  - ", prefix = "\n  - ") { artifact ->
                 val id = artifact.moduleVersion.id
                 "${id.group}:${id.name}:${id.version}"
@@ -115,8 +115,11 @@ tasks {
     // offline jar should be ready to go with all dependencies
     shadowJar {
         mergeServiceFiles()
-        minimize()
-        archiveClassifier.set("offline")
+        minimize {
+            // if present, kotlin-reflect must be excluded from minimization
+            exclude(dependency("org.jetbrains.kotlin:kotlin-reflect"))
+        }
+        archiveClassifier.set(if (shadowJarOnly) "" else "offline")
         exclude("plugin.yml")
         rename("offline-plugin.yml", "plugin.yml")
 
@@ -124,33 +127,14 @@ tasks {
         isEnableRelocation = true
         relocationPrefix = "${project.group}.${project.name.lowercase()}.libraries"
 
-        // don't relocate kotlin--shadow relocation doesn't relocate certain metadata breaking some synthetic classes in the case of reflection (used by jackson, for example)
+        // if using reflection, don't relocate kotlin:
+        // shadow relocation doesn't relocate certain metadata breaking some synthetic classes in the case of reflection (used by jackson, for example)
         // see also: https://github.com/JetBrains/Exposed/issues/1353
-        relocate("kotlin.**", "kotlin")
-    }
-
-    // online jar only contains "provide" dependencies, others are downloaded at runtime
-    val onlineJar by registering(ShadowJar::class) {
-        group = LifecycleBasePlugin.BUILD_GROUP
-        description = "Create \"online\" variant of the plugin jar with provide dependencies"
-
-        mergeServiceFiles()
-        minimize()
-        archiveClassifier.set("")
-
-        from(sourceSets.main.map { it.output })
-        exclude("offline-plugin.yml")
-        configurations = listOf(provideImplementation)
-
-        // some dependencies depend on kotlin, which is not needed for the "online" variant, so filter it out by default
-        dependencies {
-            exclude(dependency("org.jetbrains.kotlin:.*"))
+        if (runtimeClasspath.resolvedConfiguration.resolvedArtifacts.any { it.name == "kotlin-reflect" }) {
+            logger.warn("Detected kotlin-reflect in runtime classpath, not relocating kotlin! Proceed with caution.")
+            relocate("kotlin", "kotlin")
         }
-
-        // avoid classpath conflicts/pollution via relocation
-        isEnableRelocation = true
-        relocationPrefix = "${project.group}.${project.name.lowercase()}.libraries"
     }
 
-    build { dependsOn(shadowJar, onlineJar) }
+    build { dependsOn(shadowJar) }
 }
