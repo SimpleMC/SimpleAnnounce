@@ -59,9 +59,17 @@ kotlin {
     jvmToolchain(21)
 }
 
+val shadowJarOnly: Boolean = project.property("shadowJarOnly")?.toString()?.toBoolean() ?: false
+val runtimeClasspath by configurations.runtimeClasspath
+
 dependencies {
     compileOnly(libs.spigot)
     implementation(libs.kotlinLogger)
+    implementation(libs.jacksonKotlin)
+    implementation(libs.jacksonDataformatYaml)
+    implementation(kotlin("stdlib"))
+
+    testImplementation(libs.spigot)
 }
 
 tasks {
@@ -70,8 +78,10 @@ tasks {
     }
 
     processResources {
-        // inject runtime libraries into online plugin variant
-        val libraries = configurations.runtimeClasspath.get().resolvedConfiguration.resolvedArtifacts
+        inputs.property("shadowJarOnly", shadowJarOnly)
+
+        // inject "online" libraries into online plugin variant
+        val libraries = runtimeClasspath.resolvedConfiguration.resolvedArtifacts
             .joinToString("\n  - ", prefix = "\n  - ") { artifact ->
                 val id = artifact.moduleVersion.id
                 "${id.group}:${id.name}:${id.version}"
@@ -102,19 +112,29 @@ tasks {
         }
     }
 
-    jar {
-        exclude("offline-plugin.yml")
-    }
-
     // offline jar should be ready to go with all dependencies
     shadowJar {
-        minimize()
-        archiveClassifier.set("offline")
+        mergeServiceFiles()
+        minimize {
+            // if present, kotlin-reflect must be excluded from minimization
+            exclude(dependency("org.jetbrains.kotlin:kotlin-reflect"))
+        }
+        archiveClassifier.set(if (shadowJarOnly) "" else "offline")
         exclude("plugin.yml")
         rename("offline-plugin.yml", "plugin.yml")
 
         // avoid classpath conflicts/pollution via relocation
         isEnableRelocation = true
         relocationPrefix = "${project.group}.${project.name.lowercase()}.libraries"
+
+        // if using reflection, don't relocate kotlin:
+        // shadow relocation doesn't relocate certain metadata breaking some synthetic classes in the case of reflection (used by jackson, for example)
+        // see also: https://github.com/JetBrains/Exposed/issues/1353
+        if (runtimeClasspath.resolvedConfiguration.resolvedArtifacts.any { it.name == "kotlin-reflect" }) {
+            logger.warn("Detected kotlin-reflect in runtime classpath, not relocating kotlin! Proceed with caution.")
+            relocate("kotlin", "kotlin")
+        }
     }
+
+    build { dependsOn(shadowJar) }
 }

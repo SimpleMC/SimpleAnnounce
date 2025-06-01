@@ -1,60 +1,81 @@
 package org.simplemc.simpleannounce
 
-import org.bukkit.ChatColor
-import org.bukkit.boss.BarColor
-import org.bukkit.boss.BarStyle
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.module.SimpleModule
+import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
-import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.plugin.java.JavaPlugin
-import org.simplemc.simpleannounce.message.Announcement
-import org.simplemc.simpleannounce.message.sender.BossBarSender
-import org.simplemc.simpleannounce.message.sender.ChatSender
-import java.util.logging.Level
+import org.simplemc.simpleannounce.config.DurationDeserializer
+import org.simplemc.simpleannounce.config.DurationSerializer
+import org.simplemc.simpleannounce.config.SimpleAnnounceConfig
+import org.simplemc.simpleannounce.sender.BossBarSender
+import org.simplemc.simpleannounce.sender.ChatSender
+import org.simplemc.simpleannounce.sender.TitleSender
+import java.io.File
+import kotlin.time.Duration
 
 class SimpleAnnounce : JavaPlugin() {
+    companion object {
+        private const val CONFIG_FILE_NAME = "config.yml"
+        private const val CONFIG_VERSION_KEY = "config-version"
+        private const val CURRENT_CONFIG_VERSION = 1
+        private const val RELOAD_COMMAND = "simpleannouncereload"
+
+        private val durationModule = SimpleModule()
+            .addDeserializer(Duration::class.java, DurationDeserializer())
+            .addSerializer(DurationSerializer())
+    }
+
+    private val objectMapper: ObjectMapper = YAMLMapper.builder()
+        .disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID)
+        .build()
+        .registerKotlinModule()
+        .registerModule(durationModule)
+        .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+
     override fun onEnable() {
         saveDefaultConfig()
-        loadConfig()
-        checkNotNull(getCommand("simpleannouncereload")).setExecutor(::reloadCommand)
+        loadAnnouncementsFromConfig()
+        checkNotNull(getCommand(RELOAD_COMMAND)).setExecutor(::reloadCommand)
         logger.info { "${description.name} version ${description.version} enabled!" }
     }
 
     private fun reload() {
         reloadConfig()
-        loadConfig()
+        loadAnnouncementsFromConfig()
     }
 
-    private fun loadConfig() {
-        // cancel any old tasks
-        server.scheduler.cancelTasks(this)
+    private fun loadAnnouncementsFromConfig() {
+        server.scheduler.cancelTasks(this) // clear any old tasks
+        migrateConfigToLatest()
 
-        updateConfig()
-
-        // load debug mode
-        if (config.getBoolean("debug-mode", false)) {
-            logger.level = Level.FINER
-        }
+        val announcementConfig = objectMapper.readValue<SimpleAnnounceConfig>(File(dataFolder, CONFIG_FILE_NAME))
 
         // load auto-reload + create task to check again if necessary
-        val reloadTime = config.getLong("auto-reloadconfig", 0L)
-        if (reloadTime > 0L) {
-            val reloadTicks = reloadTime * 60 * 20
+        if (announcementConfig.autoReload?.isPositive() == true) {
+            val reloadTicks = announcementConfig.autoReload.inTicks
             server.scheduler.runTaskTimerAsynchronously(this, ::reload, reloadTicks, reloadTicks)
 
-            logger.fine { "Will reload config every $reloadTime minutes" }
+            logger.fine { "Will reload config every ${announcementConfig.autoReload}" }
         }
 
-        config.getConfigurationSection("announcements")?.getKeys(false)?.let { keys ->
-            keys.mapNotNull { config.getConfigurationSection("announcements.$it") }
-                .forEach {
-                    logger.fine { "Loading announcement '${it.name}'" }
-                    loadAnnouncementSender(loadAnnouncement(it), it)
-                }
+        // set up senders
+        announcementConfig.announcements.forEach { config ->
+            when (config) {
+                is SimpleAnnounceConfig.AnnouncementConfig.Chat -> ChatSender(this, config)
+                is SimpleAnnounceConfig.AnnouncementConfig.Boss -> BossBarSender(this, config)
+                is SimpleAnnounceConfig.AnnouncementConfig.Title -> TitleSender(this, config)
+            }
         }
     }
 
-    private fun updateConfig() {
+    private fun migrateConfigToLatest() {
         var updated = false
 
         // migrate each config version until we're at the latest (no more updates)
@@ -69,42 +90,15 @@ class SimpleAnnounce : JavaPlugin() {
         }
     }
 
-    private fun configVersionMigration() = when (config["config-version", 0]) {
-        1 -> false // this is the current version
+    private fun configVersionMigration() = when (config[CONFIG_VERSION_KEY, 0]) {
+        CURRENT_CONFIG_VERSION -> false // this is the current version
         else -> {
             // invalid or no config version set, bring in defaults
             config.options().copyDefaults(true)
-            config["config-version"] = 1
+            config[CONFIG_VERSION_KEY] = CURRENT_CONFIG_VERSION
             true
         }
     }
-
-    private fun loadAnnouncement(announcementConfig: ConfigurationSection) = Announcement(
-        label = announcementConfig.name,
-        messages = announcementConfig.getStringList("messages").map { ChatColor.translateAlternateColorCodes('&', it) },
-        permissionIncludes = announcementConfig.getStringListOrEmpty("includesperms"),
-        permissionExcludes = announcementConfig.getStringListOrEmpty("excludesperms"),
-        delay = announcementConfig.getInt("delay", 0),
-        period = if (announcementConfig.isSet("repeat")) announcementConfig.getInt("repeat") else null,
-        random = announcementConfig.getBoolean("random", false),
-    )
-
-    private fun loadAnnouncementSender(announcement: Announcement, announcementConfig: ConfigurationSection) =
-        when (announcementConfig.getString("sender", "chat")) {
-            "boss", "bossbar" -> BossBarSender(
-                plugin = this,
-                announcement = announcement,
-                holdTime = announcementConfig.getInt("bar.hold", 5),
-                color = BarColor.valueOf(checkNotNull(announcementConfig.getString("bar.color", "PURPLE")).uppercase()),
-                style = BarStyle.valueOf(checkNotNull(announcementConfig.getString("bar.style", "SOLID")).uppercase()),
-                animate = announcementConfig.getBoolean("bar.animate.enable", true),
-                reverse = announcementConfig.getBoolean("bar.animate.reverse", false),
-            )
-
-            "chat" -> ChatSender(this, announcement)
-            else ->
-                throw IllegalArgumentException("Invalid message sender configured on message '${announcement.label}'!")
-        }
 
     override fun onDisable() {
         server.scheduler.cancelTasks(this)
@@ -112,12 +106,9 @@ class SimpleAnnounce : JavaPlugin() {
     }
 
     private fun reloadCommand(sender: CommandSender, command: Command, label: String, vararg args: String): Boolean {
-        reloadConfig()
-        loadConfig()
-
+        reload()
         logger.fine { "Config reloaded" }
         sender.sendMessage("SimpleAnnounce config reloaded.")
-
         return true
     }
 }
