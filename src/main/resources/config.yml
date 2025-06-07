@@ -14,7 +14,7 @@
 # random(boolean, optional): <if list of messages should be sent in random order>
 # delay(duration, optional - default 0): <Delay to send message>
 # repeat(duration, optional): <time between sending/repeating each message>
-# sound(SoundConfig):
+# sound(SoundConfig, optional):
 #   sound(Sound): <Sound to send with announcement, see https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Sound.html)
 #   volume(float, optional): <Volume of sound to send between 0 and 1, default 1>
 #   pitch(float, optional): <Pitch of sound to send between 0.5 and 2, default 1>
@@ -32,7 +32,7 @@
 
 # messages(ChatMessage list):
 # - message(string): <message string>
-#   <sound config overrides, eg sound, volume, pitch>
+#   sound(SoundConfig, optional): <Override announcement Sound config per message>
 #
 # Boss type:
 #
@@ -43,7 +43,7 @@
 # reverseAnimation(boolean): <if animation should be reversed>
 # messages(BossBarMessage list):
 # - message(string): <message string>
-#   <sound config overrides, eg sound, volume, pitch>
+#   sound(SoundConfig, optional): <Override announcement Sound config per message>
 #   <boss bar config overrides eg hold, color, style, animate, etc...see above>
 #
 # Title type:
@@ -54,7 +54,7 @@
 # messages(TitleMessage list):
 # - title(string): <title string>
 #   subtitle(string): <subtitle string, appears below title slightly smaller>
-#   <sound config overrides, eg sound, volume, pitch>
+#   sound(SoundConfig, optional): <Override announcement Sound config per message>
 #   <title config overrides eg fadeIn, stay, fadeOut...see above>
 #
 # -------------------------
