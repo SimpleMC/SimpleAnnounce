@@ -11,7 +11,7 @@ class BossBarSender(
     announcement: Boss,
 ) : AnnouncementSender<Boss.BossBarMessage, Boss>(plugin, announcement) {
     override fun run() {
-        val message = getNextAnnouncement()
+        val message = getNextMessage()
         val barConfig = message.barConfig ?: announcement.barConfig
 
         // create the bar
@@ -19,7 +19,7 @@ class BossBarSender(
         bar.progress = if (barConfig.reverseAnimation) 1.0 else 0.0
 
         // show bar to players
-        Bukkit.getOnlinePlayers().filterNotNull().filter(this::shouldSendTo).forEach(bar::addPlayer)
+        send(message, bar::addPlayer)
         bar.isVisible = true
 
         // set up animation

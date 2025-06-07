@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### Added
+- GH-4: Sound support (@tajobe)
 - GH-3: Title type announcement sender (@tajobe)
 - MIT license
 
@@ -13,6 +14,7 @@
 - Config Auto-reload is now a repeating task as intended
 - Config actually created on first run
 - Copy updated default header when config is updated
+- Chat sender advancing the current message per player
 
 ### Removed
 - Offline variant is now the default jar, no longer producing an "online" version

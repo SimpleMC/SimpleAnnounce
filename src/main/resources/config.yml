@@ -14,6 +14,10 @@
 # random(boolean, optional): <if list of messages should be sent in random order>
 # delay(duration, optional - default 0): <Delay to send message>
 # repeat(duration, optional): <time between sending/repeating each message>
+# sound(SoundConfig):
+#   sound(Sound): <Sound to send with announcement, see https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Sound.html)
+#   volume(float, optional): <Volume of sound to send between 0 and 1, default 1>
+#   pitch(float, optional): <Pitch of sound to send between 0.5 and 2, default 1>
 # includesPermissions(String list, optional):
 # - <only send to those with this perm>
 # - <and this one>
@@ -26,7 +30,9 @@
 #
 # Chat type:
 
-# messages(String list): [<list of messages>]
+# messages(ChatMessage list):
+# - message(string): <message string>
+#   <sound config overrides, eg sound, volume, pitch>
 #
 # Boss type:
 #
@@ -37,6 +43,7 @@
 # reverseAnimation(boolean): <if animation should be reversed>
 # messages(BossBarMessage list):
 # - message(string): <message string>
+#   <sound config overrides, eg sound, volume, pitch>
 #   <boss bar config overrides eg hold, color, style, animate, etc...see above>
 #
 # Title type:
@@ -47,6 +54,7 @@
 # messages(TitleMessage list):
 # - title(string): <title string>
 #   subtitle(string): <subtitle string, appears below title slightly smaller>
+#   <sound config overrides, eg sound, volume, pitch>
 #   <title config overrides eg fadeIn, stay, fadeOut...see above>
 #
 # -------------------------
@@ -64,13 +72,19 @@ announcements:
     excludesPermissions:
       - permissions.admin
     messages:
-      - hello
-      - world
+      - message: hello
+      - message: world
   - type: Chat
     repeat: 1m 40s
+    sound:
+      sound: AMBIENT_CAVE
+      volume: .5
+      pitch: 2
     messages:
-      - abc
-      - xyz
+      - message: abc
+        sound:
+          sound: BLOCK_ENCHANTMENT_TABLE_USE
+      - message: xyz
   - type: Title
     repeat: 30s
     messages:
