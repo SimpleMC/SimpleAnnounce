@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonUnwrapped
+import net.md_5.bungee.api.chat.BaseComponent
 import org.bukkit.Sound
 import org.bukkit.boss.BarColor
 import org.bukkit.boss.BarStyle
@@ -68,7 +69,7 @@ data class SimpleAnnounceConfig(
             override val excludesPermissions: List<String> = emptyList(),
             @field:JsonAlias("message") override val messages: List<ChatMessage>,
         ) : AnnouncementConfig<ChatMessage>() {
-            data class ChatMessage(val message: String, override val sound: SoundConfig? = null) : Message
+            data class ChatMessage(val message: BaseComponent, override val sound: SoundConfig? = null) : Message
         }
 
         data class Boss(
@@ -82,14 +83,10 @@ data class SimpleAnnounceConfig(
             @field:JsonUnwrapped val barConfig: BarConfig = BarConfig(),
         ) : AnnouncementConfig<Boss.BossBarMessage>() {
             data class BossBarMessage(
-                val message: String,
+                val message: BaseComponent,
                 override val sound: SoundConfig? = null,
                 @field:JsonUnwrapped val barConfig: BarConfig? = null,
-            ) : Message {
-                init {
-                    require(message.length <= 64) { "Boss Bar text must be <= 64 characters" }
-                }
-            }
+            ) : Message
 
             data class BarConfig(
                 val hold: Duration = 5.seconds,
@@ -118,8 +115,8 @@ data class SimpleAnnounceConfig(
             @field:JsonUnwrapped val titleConfig: TitleConfig = TitleConfig(),
         ) : AnnouncementConfig<Title.TitleMessage>() {
             data class TitleMessage(
-                val title: String,
-                val subtitle: String? = null,
+                val title: BaseComponent,
+                val subtitle: BaseComponent? = null,
                 override val sound: SoundConfig? = null,
                 @field:JsonUnwrapped val titleConfig: TitleConfig? = null,
             ) : Message
