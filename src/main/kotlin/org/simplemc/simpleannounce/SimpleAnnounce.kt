@@ -5,11 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
+import com.fasterxml.jackson.module.kotlin.addDeserializer
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import net.md_5.bungee.api.chat.BaseComponent
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.plugin.java.JavaPlugin
+import org.simplemc.simpleannounce.config.BaseComponentDeserializer
 import org.simplemc.simpleannounce.config.DurationDeserializer
 import org.simplemc.simpleannounce.config.DurationSerializer
 import org.simplemc.simpleannounce.config.SimpleAnnounceConfig
@@ -27,7 +30,8 @@ class SimpleAnnounce : JavaPlugin() {
         private const val RELOAD_COMMAND = "simpleannouncereload"
 
         private val durationModule = SimpleModule()
-            .addDeserializer(Duration::class.java, DurationDeserializer())
+            .addDeserializer(Duration::class, DurationDeserializer())
+            .addDeserializer(BaseComponent::class, BaseComponentDeserializer())
             .addSerializer(DurationSerializer())
     }
 

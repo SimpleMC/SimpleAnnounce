@@ -9,6 +9,6 @@ class ChatSender(
 ) : AnnouncementSender<Chat.ChatMessage, Chat>(plugin, announcement) {
     override fun run() {
         val message = getNextMessage()
-        send(message) { it.sendMessage(message.message) }
+        send(message) { it.spigot().sendMessage(message.message) }
     }
 }

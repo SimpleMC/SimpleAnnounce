@@ -34,7 +34,7 @@ Messages can be sent server-wide or controlled by permissions after a delay and 
     - ...additional options depending on announcement type
   - `Chat` type announcement:
     - `messages`(ChatMessage list): Message(s) to send
-      - `message`(string): message string
+      - `message`([Chat Component]): message component (plain text, or json, see examples)
       - `sound`(SoundConfig, optional): Override announcement SoundConfig
   - `Boss` type announcement:
     - `hold`(duration*): Time for boss bar to be on screen
@@ -43,7 +43,7 @@ Messages can be sent server-wide or controlled by permissions after a delay and 
     - `animate`(boolean): if bar should animate over hold time
     - `reverseAnimation`(boolean): if animation should be reversed
     - `messages`(BossBarMessage list):
-      - `message`(string): message string
+      - `message`([Chat Component]): message component (plain text, or json, see examples)
       - `sound`(SoundConfig, optional): Override announcement SoundConfig
       - ...boss bar config overrides per message eg hold, color, style, animate, etc...
   - `Title` type announcement:
@@ -51,8 +51,8 @@ Messages can be sent server-wide or controlled by permissions after a delay and 
     - `stay`(duration*): Time for title to stay on screen
     - `fadeOut`(duration*): Time it takes for title to fade out
     - `messages`(TitleMessage list):
-      - `title`(string): title string
-      - `subtitle`(string): subtitle string, appears below title slightly smaller
+      - `title`([Chat Component]): title component (plain text, or json, see examples)
+      - `subtitle`([Chat Component]): subtitle component (plain text, or json, see examples), appears below title slightly smaller
       - `sound`(SoundConfig, optional): Override announcement SoundConfig
       - ...title config overrides eg fadeIn, stay, fadeOut...
 - `config-version`: **Internal use for configuration migrations, do not edit**
@@ -120,6 +120,59 @@ announcements:
 config-version: 1
 ```
 
+#### Chat Components
+
+Message contents are parsed as [Chat Component]s. This means that in addition to the normal `message: some message`, you can use JSON or YAML-formatted components.
+
+```yaml
+  - type: Chat
+    repeat: 30s
+    messages:
+      - message: {
+        "extra": [
+          {
+            "color": "gold",
+            "text": "This is a "
+          },
+          {
+            "bold": true,
+            "color": "gold",
+            "clickEvent": {
+              "action": "open_url",
+              "value": "https://www.spigotmc.org/wiki/the-chat-component-api/"
+            },
+            "hoverEvent": {
+              "action": "show_text",
+              "contents": "Chat Component API"
+            },
+            "text": "TextComponent"
+          },
+          { "text": " announcement!" }
+        ]
+      }
+```
+or
+```yaml
+  - type: Chat
+    repeat: 30s
+    messages:
+      - message:
+          extra:
+            - color: gold
+              text: "This is a "
+            - bold: true
+              color: gold
+              text: TextComponent
+              clickEvent:
+                action: open_url
+                value: "https://www.spigotmc.org/wiki/the-chat-component-api/"
+              hoverEvent:
+                action: show_text
+                "contents": "Chat Component API"
+            - text: " announcement!"
+```
+
 [Sound]: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Sound.html
 [BarColor]: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/boss/BarColor.html
 [BarStyle]: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/boss/BarStyle.html
+[Chat Component]: https://www.spigotmc.org/wiki/the-chat-component-api/

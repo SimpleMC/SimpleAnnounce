@@ -31,7 +31,7 @@
 # Chat type:
 
 # messages(ChatMessage list):
-# - message(string): <message string>
+# - message(Chat Component): <message component (string or JSON component, see https://www.spigotmc.org/wiki/the-chat-component-api/)>
 #   sound(SoundConfig, optional): <Override announcement Sound config per message>
 #
 # Boss type:
@@ -42,7 +42,7 @@
 # animate(boolean): <if bar should animate over hold time>
 # reverseAnimation(boolean): <if animation should be reversed>
 # messages(BossBarMessage list):
-# - message(string): <message string>
+# - message(Chat Component): <message component (string or JSON component, see https://www.spigotmc.org/wiki/the-chat-component-api/)>
 #   sound(SoundConfig, optional): <Override announcement Sound config per message>
 #   <boss bar config overrides eg hold, color, style, animate, etc...see above>
 #
@@ -52,8 +52,8 @@
 # stay(duration): <Time for title to stay on screen>
 # fadeOut(duration): <Time it takes for title to fade out>
 # messages(TitleMessage list):
-# - title(string): <title string>
-#   subtitle(string): <subtitle string, appears below title slightly smaller>
+# - title(Chat Component): <title component (string or JSON component, see https://www.spigotmc.org/wiki/the-chat-component-api/)>
+#   subtitle(Chat Component): <subtitle component (string or JSON component, see https://www.spigotmc.org/wiki/the-chat-component-api/), appears below title slightly smaller>
 #   sound(SoundConfig, optional): <Override announcement Sound config per message>
 #   <title config overrides eg fadeIn, stay, fadeOut...see above>
 #
@@ -111,4 +111,29 @@ announcements:
     color: PURPLE
     style: SOLID
     animate: true
+  - type: Chat
+    repeat: 5m
+    messages:
+      - message: {
+        "extra": [
+          {
+            "color": "gold",
+            "text": "This is a "
+          },
+          {
+            "bold": true,
+            "color": "gold",
+            "clickEvent": {
+              "action": "open_url",
+              "value": "https://www.spigotmc.org/wiki/the-chat-component-api/"
+            },
+            "hoverEvent": {
+              "action": "show_text",
+              "contents": "Chat Component API"
+            },
+            "text": "TextComponent"
+          },
+          { "text": " announcement!" }
+        ]
+      }
 config-version: 1

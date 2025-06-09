@@ -13,8 +13,8 @@ class TitleSender(
 
         send(message) {
             it.sendTitle(
-                message.title,
-                message.subtitle,
+                message.title.toLegacyText(),
+                message.subtitle?.toLegacyText(),
                 titleConfig.fadeInTicks,
                 titleConfig.stayTicks,
                 titleConfig.fadeOutTicks,

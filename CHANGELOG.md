@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 ### Added
+- GH-5: JSON Chat Component (JSON) support in messages (@tajobe)
+  - Uses legacy conversion for Boss and Title announcements, full component support for Chat
 - GH-4: Sound support (@tajobe)
 - GH-3: Title type announcement sender (@tajobe)
 - MIT license

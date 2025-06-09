@@ -15,7 +15,7 @@ class BossBarSender(
         val barConfig = message.barConfig ?: announcement.barConfig
 
         // create the bar
-        val bar = Bukkit.createBossBar(message.message, barConfig.color, barConfig.style)
+        val bar = Bukkit.createBossBar(message.message.toLegacyText(), barConfig.color, barConfig.style)
         bar.progress = if (barConfig.reverseAnimation) 1.0 else 0.0
 
         // show bar to players
